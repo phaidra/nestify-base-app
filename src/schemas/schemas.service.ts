@@ -86,14 +86,6 @@ export class SchemasService implements OnModuleInit {
     return false;
   };
 
-  public mongooseSchemaArray () {
-    const r = [];
-    for (let i = 0; i < this.names.length; i ++) {
-      r.push({ name: this.names[i], schema: this.schemas[i] });
-    }
-    return r;
-  };
-
   /**
    *
    * @param name
