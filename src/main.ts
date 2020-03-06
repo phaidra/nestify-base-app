@@ -22,8 +22,12 @@ async function bootstrap() {
       UserModule,
     ],
   });
-  SwaggerModule.setup(`api/v${process.env.API_VERSION}/swagger`, app, document)
 
-  await app.listen(process.env.APP_PORT);
+  app.get('SchemasService').swaggerDoc = document;
+  app.get('SchemasService').app = app;
+
+  await app.listen(process.env.APP_PORT).then(() => {
+    console.log('listening');
+  });
 }
 bootstrap();

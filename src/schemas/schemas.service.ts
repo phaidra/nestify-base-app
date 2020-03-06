@@ -1,6 +1,7 @@
 import { HttpAdapterHost } from '@nestjs/core';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { SwaggerDocument, SwaggerModule } from '@nestjs/swagger';
 import { ConverterService } from './converter.service';
 
 import * as _  from 'lodash';
@@ -18,11 +19,13 @@ export class SchemasService implements OnModuleInit {
   readonly rawjson: Record<string, any>[] = [];
   readonly schemas: Record<string, any>[] = [];
   readonly models: Record<string, any>[] = [];
+  public swaggerDoc: SwaggerDocument;
+  public app: any = null;
 
   /**
    *
    */
-  async onModuleInit() {
+  onModuleInit() {
     const fn = fs.readdirSync( this.configService.get<string>('schemas.dir') );
     const appinstance = this.adapterHost.httpAdapter;
     //create schemas
@@ -52,6 +55,8 @@ export class SchemasService implements OnModuleInit {
         restify.serve(appinstance, this.models[i]);
       }
     }
+    this.addSwagger(this.swaggerDoc);
+    SwaggerModule.setup(`api/v${process.env.API_VERSION}/swagger`, this.app, this.swaggerDoc);
   };
 
   /**
@@ -84,6 +89,209 @@ export class SchemasService implements OnModuleInit {
       }
     }
     return false;
+  };
+
+  public addSwagger(swaggerDoc) {
+    for (let i = 0; i < this.names.length; i ++) {
+      if(this.names[i]) {
+        console.log(`adding OpenAPI documentation for ${this.names[i]}`);
+        this.addMongooseAPISpec(swaggerDoc, this.names[i], this.schemas[i]);
+      }
+    }
+  }
+
+  /**
+   *
+   * @param swaggerSpec
+   * @param name
+   * @param schema
+   */
+  private addMongooseAPISpec(swaggerSpec, name, schema ) {
+    swaggerSpec.paths[`/${name}/count`] = {
+      "get" : {
+        "description":`Returns the number of documents of type ${name}`,
+        "produces":["application/json"],
+        "responses":{
+          200:{
+            "description":`Document Count of ${name}`,
+          }
+        }
+      },
+    }
+    swaggerSpec.paths[`/${name}`] = {
+      "get" : {
+        "description":`Returns a List of ${name}s`,
+        "produces":["application/json"],
+        "parameters":[
+          {
+            "name":"sort",
+            "description":"Key Name to Sort by, preceded by '-' for descending, default: _id",
+            "in":"query",
+            "type":"string"
+          },
+          {
+            "name":"skip",
+            "description":"Number of records to skip from start, default: 0",
+            "in":"query",
+            "type":"integer"
+          },
+          {
+            "name":"limit",
+            "description":"Number of records to return, default: 10",
+            "in":"query",
+            "type":"integer"
+          },
+          {
+            "name":"query",
+            "description":"MongoDB Query as a well formed JSON String, ie {\"name\":\"Bob\"}",
+            "in":"query",
+            "type":"string"
+          },
+          {
+            "name":"populate",
+            "description":"Path to a MongoDB reference to populate, ie [{\"path\":\"customer\"},{\"path\":\"products\"}]",
+            "in":"query",
+            "type":"string"
+          },
+        ],
+        "responses":{
+          200:{
+            "description":`Returns a List of ${name}`,
+            "schema":{"$ref":`#/definitions/${name}`}
+          }
+        }
+      },
+      "post" : {
+        "description":`Creates a new instance of ${name}`,
+        "produces":["application/json"],
+        "consumes":["application/json"],
+        "parameters":[{
+          "name":name,
+          "in":"body",
+          "required":true,
+          "schema":{"$ref":`#/definitions/${name}`}
+        }],
+        "responses":{
+          200:{
+            "description":`The created instance of ${name}`,
+            "schema":{"$ref":`#/definitions/${name}`}
+          }
+        }
+      },
+      "delete" : {
+        "description":`Deletes the entire contents of collection ${name}`,
+        "produces":["application/json"],
+        "responses":{
+          200:{
+            "description":`Emptied Collection ${name}`,
+          }
+        }
+      }
+    }
+    swaggerSpec.paths[`/${name}/{id}`] = {
+      "get" : {
+        "description":`Returns a List of ${name}s`,
+        "produces":["application/json"],
+        "parameters":[
+          {
+            "name":"id",
+            "description":"MongoDB document _id",
+            "in":"path",
+            "type":"string",
+            "required":true
+          },
+        ],
+        "responses":{
+          200:{
+            "description":`Returns document with requested ID from collection ${name}`,
+            "schema":{"$ref":`#/definitions/${name}`}
+          },
+          404:{
+            "description":`No document found with requested ID in collection ${name}`,
+          }
+        }
+      },
+      "post" : {
+        "description":"Updates the document with the given ID",
+        "produces":["application/json"],
+        "consumes":["application/json"],
+        "parameters":[
+          {
+            "name":"id",
+            "description":"MongoDB document _id",
+            "in":"path",
+            "type":"string",
+            "required":true
+          },
+          {
+            "name":name,
+            "in":"body",
+            "required":true,
+            "schema":{"$ref":`#/definitions/${name}`}
+          }
+        ],
+        "responses":{
+          200:{
+            "description":`The updated instance of ${name}`,
+            "schema":{"$ref":`#/definitions/${name}`}
+          },
+          404:{
+            "description":`No document found with requested ID in collection ${name}`,
+          }
+        }
+      },
+      "patch" : {
+        "description":"Partially updates the document with the given ID",
+        "produces":["application/json"],
+        "consumes":["application/json"],
+        "parameters":[
+          {
+            "name":"id",
+            "description":"MongoDB document _id",
+            "in":"path",
+            "type":"string",
+            "required":true
+          },
+          {
+            "name":name,
+            "in":"body",
+            "required":true,
+            "schema":{"$ref":`#/definitions/${name}`}
+          }
+        ],
+        "responses":{
+          200:{
+            "description":`The updated instance of ${name}`,
+            "schema":{"$ref":`#/definitions/${name}`}
+          },
+          404:{
+            "description":`No document found with requested ID in collection ${name}`,
+          }
+        }
+      },
+      "delete" : {
+        "description":"Deletes the document with the given ID",
+        "produces":["application/json"],
+        "parameters":[
+          {
+            "name":"id",
+            "description":"MongoDB document _id",
+            "in":"path",
+            "type":"string",
+            "required":true
+          },
+        ],
+        "responses":{
+          200:{
+            "description":"Deleted document with given ID",
+          },
+          404:{
+            "description":`No document found with requested ID in collection ${name}`,
+          }
+        }
+      }
+    }
+    swaggerSpec.definitions[name] = schema.jsonSchema();
   };
 
   /**
@@ -145,5 +353,6 @@ export class SchemasService implements OnModuleInit {
     }
     return p;
   };
+
 }
 
