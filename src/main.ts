@@ -16,7 +16,6 @@ async function bootstrap() {
     .setDescription(app.get('ConfigService').get('meta.description'))
     .setVersion(process.env.API_VERSION)
     .setBasePath(`api/v${process.env.API_VERSION}`)
-    .addTag('API')
     .build();
   const document = SwaggerModule.createDocument(app, options, {
     include: [

@@ -26,7 +26,7 @@ export default () => ({
     },
     "version": "1",
     "meta": {
-        "title":"",
+        "title":"Mongoose Nestify",
         "description":"",
         "copyright-software": "MIT License",
         "copyright-data": "CC BY 2.0",
