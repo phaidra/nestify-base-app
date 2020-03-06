@@ -203,7 +203,7 @@ export class SchemasService implements OnModuleInit {
     }
     swaggerSpec.paths[`/${name}/{id}`] = {
       "get" : {
-        "description":`Returns a List of ${name}s`,
+        "description":`Returns the specified document of type ${name}`,
         "produces":["application/json"],
         "parameters":[
           {
@@ -212,6 +212,12 @@ export class SchemasService implements OnModuleInit {
             "in":"path",
             "type":"string",
             "required":true
+          },
+          {
+            "name":"populate",
+            "description":"Path to a MongoDB reference to populate, ie [{\"path\":\"customer\"},{\"path\":\"products\"}]",
+            "in":"query",
+            "type":"string"
           },
         ],
         "responses":{
