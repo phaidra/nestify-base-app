@@ -27,7 +27,7 @@ export class SchemasService implements OnModuleInit {
    */
   onModuleInit() {
     const fn = fs.readdirSync( this.configService.get<string>('schemas.dir') );
-    const appinstance = this.adapterHost.httpAdapter;
+
     //create schemas
     for (let i = 0; i < fn.length; i++) {
       if(/.*\.json/.test(fn[i]) && !/_.*/.test(fn[i])){
@@ -49,6 +49,7 @@ export class SchemasService implements OnModuleInit {
     }
 
     //restify models
+    const appinstance = this.adapterHost.httpAdapter;
     for (let i = 0; i < this.names.length; i ++) {
       console.log(`restifying models for ${this.names[i]}`);
       if(this.names[i]) {
