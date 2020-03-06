@@ -1,5 +1,5 @@
 import { HttpAdapterHost } from '@nestjs/core';
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { INestApplication, Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerDocument, SwaggerModule } from '@nestjs/swagger';
 import { ConverterService } from './converter.service';
@@ -20,7 +20,7 @@ export class SchemasService implements OnModuleInit {
   readonly schemas: Record<string, any>[] = [];
   readonly models: Record<string, any>[] = [];
   public swaggerDoc: SwaggerDocument;
-  public app: any = null;
+  public app: INestApplication = null;
 
   /**
    *
