@@ -115,7 +115,10 @@ export class SchemasService implements OnModuleInit {
           200:{
             "description":`Document Count of ${name}`,
           }
-        }
+        },
+        "tags":[
+          `${name}`
+        ]
       },
     }
     swaggerSpec.paths[`/${name}`] = {
@@ -159,7 +162,10 @@ export class SchemasService implements OnModuleInit {
             "description":`Returns a List of ${name}`,
             "schema":{"$ref":`#/definitions/${name}`}
           }
-        }
+        },
+        "tags":[
+          `${name}`
+        ]
       },
       "post" : {
         "description":`Creates a new instance of ${name}`,
@@ -176,7 +182,10 @@ export class SchemasService implements OnModuleInit {
             "description":`The created instance of ${name}`,
             "schema":{"$ref":`#/definitions/${name}`}
           }
-        }
+        },
+        "tags":[
+          `${name}`
+        ]
       },
       "delete" : {
         "description":`Deletes the entire contents of collection ${name}`,
@@ -185,7 +194,10 @@ export class SchemasService implements OnModuleInit {
           200:{
             "description":`Emptied Collection ${name}`,
           }
-        }
+        },
+        "tags":[
+          `${name}`
+        ]
       }
     }
     swaggerSpec.paths[`/${name}/{id}`] = {
@@ -209,7 +221,10 @@ export class SchemasService implements OnModuleInit {
           404:{
             "description":`No document found with requested ID in collection ${name}`,
           }
-        }
+        },
+        "tags":[
+          `${name}`
+        ]
       },
       "post" : {
         "description":"Updates the document with the given ID",
@@ -238,7 +253,10 @@ export class SchemasService implements OnModuleInit {
           404:{
             "description":`No document found with requested ID in collection ${name}`,
           }
-        }
+        },
+        "tags":[
+          `${name}`
+        ]
       },
       "patch" : {
         "description":"Partially updates the document with the given ID",
@@ -267,7 +285,10 @@ export class SchemasService implements OnModuleInit {
           404:{
             "description":`No document found with requested ID in collection ${name}`,
           }
-        }
+        },
+        "tags":[
+          `${name}`
+        ]
       },
       "delete" : {
         "description":"Deletes the document with the given ID",
@@ -288,7 +309,10 @@ export class SchemasService implements OnModuleInit {
           404:{
             "description":`No document found with requested ID in collection ${name}`,
           }
-        }
+        },
+        "tags":[
+          `${name}`
+        ]
       }
     }
     swaggerSpec.definitions[name] = schema.jsonSchema();
