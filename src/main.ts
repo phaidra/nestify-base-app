@@ -4,6 +4,7 @@ import config from './config';
 
 import { AppModule } from './app.module';
 import { UserModule } from './user/user.module';
+import { SchemasModule } from './schemas/schemas.module';
 
 
 async function bootstrap() {
@@ -20,6 +21,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, options, {
     include: [
       UserModule,
+      SchemasModule,
     ],
   });
 
