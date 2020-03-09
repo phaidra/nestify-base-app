@@ -1,10 +1,23 @@
-import { Controller, Get, Req, HttpStatus, Post, Body, Put, Query, NotFoundException, Delete, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Req,
+  HttpStatus,
+  Post,
+  Body,
+  Put,
+  Query,
+  NotFoundException,
+  Delete,
+  Param,
+} from '@nestjs/common';
 import { Request } from 'express';
 import { SchemasService } from './schemas.service';
 
 @Controller()
 export class SchemasController {
-  constructor(private schemasService: SchemasService) { }
+  constructor(private schemasService: SchemasService) {
+  }
 
   @Get()
   apiroot(@Req() req: Request): Record<string, any> {

@@ -6,7 +6,7 @@ import config from './config';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { SchemasModule} from './schemas/schemas.module';
+import { SchemasModule } from './schemas/schemas.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 
@@ -31,4 +31,5 @@ import { AuthModule } from './auth/auth.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+}

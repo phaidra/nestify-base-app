@@ -10,6 +10,7 @@ import { SchemasController } from './schemas.controller';
   imports: [MongooseModule],
   providers: [SchemasService, ConverterService],
   controllers: [SchemasController],
-  exports: [SchemasService]
+  exports: [SchemasService],
 })
-export class SchemasModule {}
+export class SchemasModule {
+}

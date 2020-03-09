@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as mongoose from 'mongoose';
-import * as _  from 'lodash';
+import * as _ from 'lodash';
 
 @Injectable()
 export class ConverterService {
@@ -8,7 +8,7 @@ export class ConverterService {
     validator: {},
     setter: {},
     getter: {},
-    default: {}
+    default: {},
   };
 
 
@@ -19,7 +19,7 @@ export class ConverterService {
    * @throws Error
    * @return {Function}
    */
-  set (param: string) {
+  set(param: string) {
     return (key, value) => {
       switch (param) {
         case 'validator':
@@ -46,10 +46,10 @@ export class ConverterService {
    * @throws Error
    * @return {Function}
    */
-  get (param: string, key: string) {
+  get(param: string, key: string) {
     const fn = this.hash && this.hash[param] && this.hash[param][key];
     if (!fn) {
-      throw new Error('Unregistered "'+param+'" with name "'+key+'"');
+      throw new Error('Unregistered "' + param + '" with name "' + key + '"');
     }
     return fn;
   };
@@ -62,7 +62,7 @@ export class ConverterService {
    * @throws Error
    * @return {Object}
    */
-  matchType (type: string) {
+  matchType(type: string) {
     const types = {
       'array': Array,
       'buffer': Buffer,
@@ -72,12 +72,12 @@ export class ConverterService {
       'number': Number,
       'objectid': mongoose.Schema.Types.ObjectId,
       'string': String,
-      'object': Object
+      'object': Object,
     };
     if (types[type.toLowerCase()]) {
       return types[type.toLowerCase()];
     }
-    throw new Error('unknown type '+type);
+    throw new Error('unknown type ' + type);
   };
 
 
@@ -88,14 +88,14 @@ export class ConverterService {
    * @throws Error
    * @return {RegExp}
    */
-  check (type: string, value: string) {
+  check(type: string, value: string) {
     if (type === 'match') {
       if (!_.isString(value)) {
         throw new Error('expected string for match key');
       }
       return new RegExp(value);
     }
-    throw new Error('unexpected type '+type);
+    throw new Error('unexpected type ' + type);
   };
 
 
@@ -105,7 +105,7 @@ export class ConverterService {
    * @param {Object} descriptor
    * @return {Object}
    */
-  convert (descriptor: Record<string, any>) {
+  convert(descriptor: Record<string, any>) {
     const encoded: string = JSON.stringify(descriptor);
     const decoded: Record<string, any> = JSON.parse(encoded, (key, value) => {
       if (key === 'type' && (typeof value !== 'object')) {
