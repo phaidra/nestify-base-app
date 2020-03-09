@@ -3,24 +3,13 @@ import {
   Get,
   Req,
   HttpStatus,
-  Post,
-  Body,
-  Put,
-  Query,
-  NotFoundException,
-  Delete,
   Param, HttpCode,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { SchemasService } from './schemas.service';
 import {
-  ApiCreatedResponse,
-  ApiBadRequestResponse,
   ApiNotFoundResponse,
-  ApiConflictResponse,
-  ApiUnauthorizedResponse,
   ApiOkResponse,
-  ApiForbiddenResponse,
   ApiUseTags,
 } from '@nestjs/swagger';
 
@@ -39,7 +28,8 @@ export class SchemasController {
 
   @Get('/jsonschema/:name')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({description: 'JSON Schema Representation of Requested Object.'})
+  @ApiOkResponse({description: 'JSON Schema representation of requested entity.'})
+  @ApiNotFoundResponse({description: 'Schema not defined.'})
   jsonSchemaByName(@Param('name') name: string): Record<string, any> {
     return this.schemasService.jsonSchemaByName(name);
   }
