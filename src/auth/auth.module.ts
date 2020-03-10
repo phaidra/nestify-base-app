@@ -6,9 +6,16 @@ import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema } from 'src/user/schemas/user.schema';
 import { RefreshTokenSchema } from './schemas/refresh-token.schema';
+import { ConfigModule } from '@nestjs/config';
+import config from '../config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: './dev.env',
+      load: [config],
+    }),
     MongooseModule.forFeature([
       { name: 'User', schema: UserSchema },
       { name: 'RefreshToken', schema: RefreshTokenSchema },

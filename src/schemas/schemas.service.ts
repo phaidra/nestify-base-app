@@ -3,6 +3,7 @@ import { INestApplication, Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerDocument, SwaggerModule } from '@nestjs/swagger';
 import { ConverterService } from './converter.service';
+import { AuthService } from '../auth/auth.service';
 
 import * as _ from 'lodash';
 import jsonSchema from 'mongoose-schema-jsonschema';
@@ -10,18 +11,24 @@ import restify from 'express-restify-mongoose';
 
 const mongoose = jsonSchema();
 import * as fs from 'fs';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Schema } from "mongoose";
+import { User } from '../user/interfaces/user.interface';
+import { ForgotPassword } from '../user/interfaces/forgot-password.interface';
 
 @Injectable()
 export class SchemasService implements OnModuleInit {
-  constructor(private readonly configService: ConfigService,
+  constructor( @InjectModel('User') private readonly userModel: Model<User>,
+               private readonly configService: ConfigService,
               private readonly converterService: ConverterService,
-              private readonly adapterHost: HttpAdapterHost) {
-  };
+              private readonly adapterHost: HttpAdapterHost,
+              private readonly authService: AuthService,
+  ) {};
 
   readonly names: string[] = [];
   readonly rawjson: Record<string, any>[] = [];
   readonly schemas: Record<string, any>[] = [];
-  readonly models: Record<string, any>[] = [];
+  readonly models: Model<any>[] = [];
   public swaggerDoc: SwaggerDocument;
   public app: INestApplication = null;
 
@@ -56,7 +63,12 @@ export class SchemasService implements OnModuleInit {
     for (let i = 0; i < this.names.length; i++) {
       console.log(`restifying models for ${this.names[i]}`);
       if (this.names[i]) {
-        restify.serve(appinstance, this.models[i]);
+        restify.serve(appinstance, this.models[i], {
+          preCreate: this.authService.validationWrapper,
+          preUpdate: this.authService.validationWrapper,
+          preDelete: this.authService.validationWrapper,
+          totalCountHeader: true,
+        });
       }
     }
     this.addSwagger(this.swaggerDoc);

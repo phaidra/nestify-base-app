@@ -4,7 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { sign } from 'jsonwebtoken';
-import { User } from 'src/user/interfaces/user.interface';
+import { User } from '../user/interfaces/user.interface';
 import { RefreshToken } from './interfaces/refresh-token.interface';
 import { v4 } from 'uuid';
 import { Request, Response, NextFunction } from 'express';
@@ -57,9 +57,10 @@ export class AuthService {
     return user;
   }
 
-  async valitationWrapper(req: Request, res: Response, next: NextFunction): Promise<any> {
-    let jwtPayload = this.jwtExtractor(req);
-    let user = await this.validateUser(jwtPayload);
+  async validationWrapper(req: Request, res: Response, next: NextFunction): Promise<any> {
+    const JwtExtractor = this.returnJwtExtractor();
+    const jwtPayload = JwtExtractor(req);
+    const user = await this.validateUser(jwtPayload);
     next();
     return user;
   }
