@@ -59,8 +59,7 @@ export class AuthService {
   }
 
   async validateUserExternal(req: Request, res: Response, next: NextFunction): Promise<any> {
-    const JwtExtractor = this.returnJwtExtractor();
-    const jwtPayload = JwtExtractor(req);
+    const jwtPayload = this.jwtExtractor(req);
     if(!jwtPayload) {
       res.status(401).json({error:'Session token invalid.'});
     }
@@ -72,7 +71,7 @@ export class AuthService {
     return user;
   }
 
-  private jwtExtractor(request) {
+  private static jwtExtractor(request) {
     let token = null;
     if (request.header('x-token')) {
       token = request.get('x-token');
