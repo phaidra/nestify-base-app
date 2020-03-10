@@ -7,7 +7,7 @@ import { sign } from 'jsonwebtoken';
 import { User } from 'src/user/interfaces/user.interface';
 import { RefreshToken } from './interfaces/refresh-token.interface';
 import { v4 } from 'uuid';
-import { Request } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { getClientIp } from 'request-ip';
 import Cryptr from 'cryptr';
 
@@ -54,6 +54,13 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('User not found.');
     }
+    return user;
+  }
+
+  async valitationWrapper(req: Request, res: Response, next: NextFunction): Promise<any> {
+    let jwtPayload = this.jwtExtractor(req);
+    let user = await this.validateUser(jwtPayload);
+    next();
     return user;
   }
 

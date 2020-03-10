@@ -16,6 +16,7 @@ async function bootstrap() {
     .setTitle(app.get('ConfigService').get('meta.title'))
     .setDescription(app.get('ConfigService').get('meta.description'))
     .setVersion(process.env.API_VERSION)
+    .addBearerAuth('Authorization', 'header')
     .setBasePath(`api/v${process.env.API_VERSION}`)
     .build();
   const document = SwaggerModule.createDocument(app, options, {

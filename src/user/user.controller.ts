@@ -18,6 +18,7 @@ import {
     ApiOkResponse,
     ApiForbiddenResponse,
     ApiUseTags,
+    ApiBearerAuth,
     } from '@nestjs/swagger';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 
@@ -94,6 +95,7 @@ export class UserController {
     @UseGuards(AuthGuard('jwt'))
     @Roles('admin')
     @HttpCode(HttpStatus.OK)
+    @ApiBearerAuth()
     @ApiOkResponse({description: 'Data recieved'})
     @ApiUnauthorizedResponse({ description: 'Not authorized.'})
     @ApiForbiddenResponse({description: 'Insufficient Rights.'})
