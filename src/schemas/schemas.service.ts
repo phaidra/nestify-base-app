@@ -12,7 +12,7 @@ import restify from 'express-restify-mongoose';
 const mongoose = jsonSchema();
 import * as fs from 'fs';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Schema } from "mongoose";
+import { Model } from "mongoose";
 import { User } from '../user/interfaces/user.interface';
 import { ForgotPassword } from '../user/interfaces/forgot-password.interface';
 
@@ -27,6 +27,7 @@ export class SchemasService implements OnModuleInit {
 
   readonly names: string[] = [];
   readonly rawjson: Record<string, any>[] = [];
+  //TODO: extend basic schema def from mongoose with our extensions (virtuals, jsonschema)
   readonly schemas: Record<string, any>[] = [];
   readonly models: Model<any>[] = [];
   public swaggerDoc: SwaggerDocument;
@@ -64,9 +65,9 @@ export class SchemasService implements OnModuleInit {
       console.log(`restifying models for ${this.names[i]}`);
       if (this.names[i]) {
         restify.serve(appinstance, this.models[i], {
-          preCreate: this.authService.validationWrapper,
-          preUpdate: this.authService.validationWrapper,
-          preDelete: this.authService.validationWrapper,
+          preCreate: this.authService.validateUserExternal,
+          preUpdate: this.authService.validateUserExternal,
+          preDelete: this.authService.validateUserExternal,
           totalCountHeader: true,
         });
       }

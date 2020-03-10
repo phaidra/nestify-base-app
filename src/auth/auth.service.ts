@@ -22,6 +22,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {
     this.crypt = new Cryptr(process.env.JWT_SECRET);
+    this.validateUserExternal = this.validateUserExternal.bind(this);
   }
 
   async createAccessToken(userId: string) {
@@ -57,10 +58,16 @@ export class AuthService {
     return user;
   }
 
-  async validationWrapper(req: Request, res: Response, next: NextFunction): Promise<any> {
+  async validateUserExternal(req: Request, res: Response, next: NextFunction): Promise<any> {
     const JwtExtractor = this.returnJwtExtractor();
     const jwtPayload = JwtExtractor(req);
-    const user = await this.validateUser(jwtPayload);
+    if(!jwtPayload) {
+      res.status(401).json({error:'Session token invalid.'});
+    }
+    const user = await this.userModel.findOne({ _id: jwtPayload.userId, verified: true });
+    if (!user) {
+      res.status(401).json({error:'User not found.'});
+    }
     next();
     return user;
   }
