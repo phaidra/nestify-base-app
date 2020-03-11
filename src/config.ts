@@ -2,8 +2,17 @@ export default () => ({
   'env': {
     'port': parseInt(process.env.APP_PORT, 10) || 3000,
   },
-  'mongourl': `mongodb://${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}`,
-  //"mongourl": `mongodb://${process.env.DATABASE_USER}:${process.env.DATABASE_PASSWORD}@${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}?authSource=${process.env.DATABASE_AUTHSOURCE}`,
+  'db': {
+    'host':process.env.DATABASE_HOST,
+    'db':process.env.DATABASE_NAME,
+    'user':process.env.DATABASE_USER,
+    'pwd':process.env.DATABASE_PASSWORD,
+    'auth':process.env.DATABASE_AUTHSOURCE
+  },
+  'mongourl': () => {
+    if(process.env.DATABASE_USER == 'none') return `mongodb://${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}`;
+    else return `mongodb://${process.env.DATABASE_USER}:${process.env.DATABASE_PASSWORD}@${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}?authSource=${process.env.DATABASE_AUTHSOURCE}`;
+  },
   'cors': {
     'credentials': true,
     'origin': process.env.APP_CORSORIGINS || '*',

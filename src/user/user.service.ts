@@ -18,9 +18,9 @@ import { User } from './interfaces/user.interface';
 @Injectable()
 export class UserService {
 
-  HOURS_TO_VERIFY = 4;
-  HOURS_TO_BLOCK = 6;
-  LOGIN_ATTEMPTS_TO_BLOCK = 5;
+  HOURS_TO_VERIFY = parseInt(process.env.JWT_HOURS_TO_VERIFY, 10);
+  HOURS_TO_BLOCK = parseInt(process.env.JWT_HOURS_TO_BLOCK, 10);
+  LOGIN_ATTEMPTS_TO_BLOCK = parseInt(process.env.JWT_LOGIN_ATTEMPTS_TO_BLOCK, 10);
 
   constructor(
     @InjectModel('User') private readonly userModel: Model<User>,
@@ -29,6 +29,10 @@ export class UserService {
   ) {
   }
 
+  /**
+   * registers a new user
+   * @param createUserDto
+   */
   async create(createUserDto: CreateUserDto): Promise<User> {
     const user = new this.userModel(createUserDto);
     await this.isEmailUnique(user.email);
@@ -37,6 +41,11 @@ export class UserService {
     return this.buildRegistrationInfo(user);
   }
 
+  /**
+   * verifies newly registered user and logs them in
+   * @param req
+   * @param verifyUuidDto
+   */
   async verifyEmail(req: Request, verifyUuidDto: VerifyUuidDto) {
     const user = await this.findByVerification(verifyUuidDto.verification);
     await this.setUserAsVerified(user);
@@ -48,6 +57,11 @@ export class UserService {
     };
   }
 
+  /**
+   * logs in user
+   * @param req
+   * @param loginUserDto
+   */
   async login(req: Request, loginUserDto: LoginUserDto) {
     const user = await this.findUserByEmail(loginUserDto.email);
     this.isUserBlocked(user);
@@ -61,6 +75,10 @@ export class UserService {
     };
   }
 
+  /**
+   * retrieves user by refreshToken and issues new accessToken
+   * @param refreshAccessTokenDto
+   */
   async refreshAccessToken(refreshAccessTokenDto: RefreshAccessTokenDto) {
     const userId = await this.authService.findRefreshToken(refreshAccessTokenDto.refreshToken);
     const user = await this.userModel.findById(userId);
@@ -72,8 +90,13 @@ export class UserService {
     };
   }
 
+  /**
+   * creates password reset token for specific mail adress.
+   * @param req
+   * @param createForgotPasswordDto
+   */
   async forgotPassword(req: Request, createForgotPasswordDto: CreateForgotPasswordDto) {
-    await this.findByEmail(createForgotPasswordDto.email);
+    await this.findUserByEmail(createForgotPasswordDto.email);
     await this.saveForgotPassword(req, createForgotPasswordDto);
     return {
       email: createForgotPasswordDto.email,
@@ -81,6 +104,11 @@ export class UserService {
     };
   }
 
+  /**
+   * verifies password reset token, sets flag in record
+   * @param req
+   * @param verifyUuidDto
+   */
   async forgotPasswordVerify(req: Request, verifyUuidDto: VerifyUuidDto) {
     const forgotPassword = await this.findForgotPasswordByUuid(verifyUuidDto);
     await this.setForgotPasswordFirstUsed(req, forgotPassword);
@@ -90,6 +118,10 @@ export class UserService {
     };
   }
 
+  /**
+   * checks if password reset flag set, saves new password
+   * @param resetPasswordDto
+   */
   async resetPassword(resetPasswordDto: ResetPasswordDto) {
     const forgotPassword = await this.findForgotPasswordByEmail(resetPasswordDto);
     await this.setForgotPasswordFinalUsed(forgotPassword);
@@ -104,6 +136,10 @@ export class UserService {
     return { hello: 'world' };
   }
 
+  /**
+   * checks if mail address already registered
+   * @param email
+   */
   private async isEmailUnique(email: string) {
     const user = await this.userModel.findOne({ email, verified: true });
     if (user) {
@@ -111,11 +147,19 @@ export class UserService {
     }
   }
 
+  /**
+   * sets verification token for newly registered user
+   * @param user
+   */
   private setRegistrationInfo(user): any {
     user.verification = v4();
     user.verificationExpires = addHours(new Date(), this.HOURS_TO_VERIFY);
   }
 
+  /**
+   * builds registration info record for newly registered user
+   * @param user
+   */
   private buildRegistrationInfo(user): any {
     const userRegistrationInfo = {
       fullName: user.fullName,
@@ -125,6 +169,11 @@ export class UserService {
     return userRegistrationInfo;
   }
 
+  /**
+   * retrieves registration record by verification token
+   * verification status and expiry time
+   * @param verification
+   */
   private async findByVerification(verification: string): Promise<User> {
     const user = await this.userModel.findOne({
       verification,
@@ -137,19 +186,19 @@ export class UserService {
     return user;
   }
 
-  private async findByEmail(email: string): Promise<User> {
-    const user = await this.userModel.findOne({ email, verified: true });
-    if (!user) {
-      throw new NotFoundException('Email not found.');
-    }
-    return user;
-  }
-
+  /**
+   * sets newly registered user as verified
+   * @param user
+   */
   private async setUserAsVerified(user) {
     user.verified = true;
     await user.save();
   }
 
+  /**
+   * retrieves user record by email
+   * @param email
+   */
   private async findUserByEmail(email: string): Promise<User> {
     const user = await this.userModel.findOne({ email, verified: true });
     if (!user) {

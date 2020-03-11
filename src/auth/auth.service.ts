@@ -25,11 +25,20 @@ export class AuthService {
     this.validateUserExternal = this.validateUserExternal.bind(this);
   }
 
+  /**
+   * Creates and returns an encrypted Access Token for a given user
+   * @param userId
+   */
   async createAccessToken(userId: string) {
     const accessToken = sign({ userId }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION });
     return this.encryptText(accessToken);
   }
 
+  /**
+   * Creates a refresh token and saves it to the DB along with the users IP, Browserinfo and Country of Request Origin
+   * @param req
+   * @param userId
+   */
   async createRefreshToken(req: Request, userId) {
     const refreshToken = new this.refreshTokenModel({
       userId,
@@ -42,6 +51,10 @@ export class AuthService {
     return refreshToken.refreshToken;
   }
 
+  /**
+   * Retrieves a refreshToken record by the actual token and returns the associated userID
+   * @param token
+   */
   async findRefreshToken(token: string) {
     const refreshToken = await this.refreshTokenModel.findOne({ refreshToken: token });
     if (!refreshToken) {
@@ -50,6 +63,10 @@ export class AuthService {
     return refreshToken.userId;
   }
 
+  /**
+   * attempts to retrieve the user record corresponding to a submitted jwt
+   * @param jwtPayload
+   */
   async validateUser(jwtPayload: JwtPayload): Promise<any> {
     const user = await this.userModel.findOne({ _id: jwtPayload.userId, verified: true });
     if (!user) {
@@ -58,6 +75,14 @@ export class AuthService {
     return user;
   }
 
+  /**
+   * JWT Validation function for direct use as express middleware
+   * extracts + decrypts jwt from request header + attempts to retrieve
+   * corresponding user
+   * @param req
+   * @param res
+   * @param next
+   */
   async validateUserExternal(req: Request, res: Response, next: NextFunction): Promise<any> {
     const jwtPayload = this.jwtExtractor(req);
     if(!jwtPayload) {
@@ -71,7 +96,11 @@ export class AuthService {
     return user;
   }
 
-  private static jwtExtractor(request) {
+  /**
+   * extracts + decrypts JWT from request header
+   * @param request
+   */
+  private jwtExtractor(request: Request) {
     let token = null;
     if (request.header('x-token')) {
       token = request.get('x-token');
@@ -94,22 +123,41 @@ export class AuthService {
     return token;
   }
 
+  /**
+   * returns private jwtExtractor for external use
+   */
   returnJwtExtractor() {
     return this.jwtExtractor;
   }
 
+  /**
+   * extracts IP from request header
+   * @param req
+   */
   getIp(req: Request): string {
     return getClientIp(req);
   }
 
+  /**
+   * extracts Browser Info from request header
+   * @param req
+   */
   getBrowserInfo(req: Request): string {
     return req.header['user-agent'] || 'XX';
   }
 
+  /**
+   * extracts country of origin from request header
+   * @param req
+   */
   getCountry(req: Request): string {
     return req.header['cf-ipcountry'] ? req.header['cf-ipcountry'] : 'XX';
   }
 
+  /**
+   *
+   * @param text
+   */
   encryptText(text: string): string {
     return this.crypt.encrypt(text);
   }
