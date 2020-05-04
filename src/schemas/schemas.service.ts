@@ -80,12 +80,12 @@ export class SchemasService implements OnModuleInit {
    *
    * @param baseurl
    */
-  public getResObject(baseurl: string) {
-    const a = [];
+  public getResObject(baseurl: string): Record<string, any>[] {
+    const a: Record<string, any>[] = [];
     for (let i = 0; i < this.names.length; i++) {
       if (this.names[i]) a.push({
         type: this.names[i],
-        id: `${baseurl}${this.names[i]}`,
+        '@id': `${baseurl}/${this.names[i]}`,
         attributes: this.schemas[i].jsonSchema(),
         populateablePaths: this.getPopulateablePathsFromSchemaObject(this.schemas[i].jsonSchema(), []),
         reversePaths: Object.keys(this.schemas[i].virtuals).slice(0, Object.keys(this.schemas[i].virtuals).length - 1),
@@ -108,7 +108,11 @@ export class SchemasService implements OnModuleInit {
     return false;
   };
 
-  public addSwagger(swaggerDoc) {
+  /**
+   *
+   * @param swaggerDoc
+   */
+  public addSwagger(swaggerDoc: Record<string, any>) {
     for (let i = 0; i < this.names.length; i++) {
       if (this.names[i]) {
         console.log(`adding OpenAPI documentation for ${this.names[i]}`);
@@ -123,7 +127,7 @@ export class SchemasService implements OnModuleInit {
    * @param name
    * @param schema
    */
-  private addMongooseAPISpec(swaggerSpec, name, schema) {
+  private addMongooseAPISpec(swaggerSpec: Record<string, any>, name: string, schema: Record<string, any>) {
     swaggerSpec.paths[`/${name}/count`] = {
       'get': {
         'description': `Returns the number of documents of type ${name}`,
