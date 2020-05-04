@@ -1,7 +1,7 @@
 import { HttpAdapterHost } from '@nestjs/core';
-import { INestApplication, Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SwaggerDocument, SwaggerModule } from '@nestjs/swagger';
+import { SwaggerDocument } from '@nestjs/swagger';
 import { ConverterService } from './converter.service';
 import { AuthService } from '../auth/auth.service';
 
@@ -12,7 +12,7 @@ import restify from 'express-restify-mongoose';
 const mongoose = jsonSchema();
 import * as fs from 'fs';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Schema } from "mongoose";
+import { Model, Schema, Connection } from "mongoose";
 import { User } from '../user/interfaces/user.interface';
 import { ForgotPassword } from '../user/interfaces/forgot-password.interface';
 
@@ -27,35 +27,70 @@ export class SchemasService implements OnModuleInit {
   ) {};
 
   public names: string[] = [];
-  public schemas: Record<string, any> = [];
-  readonly models: Model<any>[] = [];
-  public swaggerDoc: SwaggerDocument;
-  public app: INestApplication = null;
+  public schemas: Record<string, any>[] = [];
+  public models: Model<any>[] = [];
 
   /**
    *
    */
   onModuleInit() {
 
-    this.names = this.createNameListFromDir(this.configService.get<string>('schemas.dir'));
-    this.schemas = this.createSchemasFromJSON(this.names.map(n => `${n}.json`));
-
+    //if not there or faulty, create schemas
+    //TODO: more checks on initial values
+    if(this.names.length < 1 || this.schemas.length < 1) this.createSchemas();
 
     //create models
-    for (let i = 0; i < this.names.length; i++) {
-      if (this.names[i]) {
-        console.log(`initializing models for ${this.names[i]}`);
-        this.addReverseVirtuals(this.names[i]);
-        this.models[i] = mongoose.connections[1].model(this.names[i], this.schemas[i]);
-      }
-    }
+    this.models = this.createModels(mongoose.connections[1], this.names, this.schemas);
 
     //restify models
-    const appinstance = this.adapterHost.httpAdapter;
+    this.restifyModels(this.adapterHost);
+  };
+
+  private static createNameListFromDir(dir: string): string[] {
+    const fn: string[] = fs.readdirSync(dir);
+    return fn
+      .map(n => n.split('.')[1] == 'json' ? n.split('.')[0] : null)
+      .filter(n => n !== null);
+  }
+
+  private createSchemasFromJSON(jsonlist: string[]): Schema<any>[] {
+    const schemalist: Schema<any>[] = [];
+    for (let i = 0; i < jsonlist.length; i++) {
+      const s = JSON.parse(fs.readFileSync(`${this.configService.get<string>('schemas.dir')}/${jsonlist[i]}`, 'utf8'));
+      schemalist[i] = new mongoose.Schema(this.converterService.convert(s));
+    }    
+    return schemalist;
+  }
+
+  public createSchemas(): boolean {
+    this.names = SchemasService.createNameListFromDir(this.configService.get<string>('schemas.dir'));
+    this.schemas = this.createSchemasFromJSON(this.names.map(n => `${n}.json`));
+    return true;
+  }
+
+  /**
+   *
+   * @param db
+   * @param namelist
+   * @param schemalist
+   */
+  private createModels(db: Connection, namelist: string[], schemalist: any): Model<any>[] {
+    const modellist: Model<any>[] = [];
+    for (let i = 0; i < namelist.length; i++) {
+      this.addReverseVirtuals(namelist[i]);
+      modellist[i] = db.model(namelist[i], schemalist[i]);
+    }
+    return modellist;
+  }
+
+  /**
+   *
+   * @param host
+   */
+  private restifyModels(host: HttpAdapterHost) {
     for (let i = 0; i < this.names.length; i++) {
-      console.log(`restifying models for ${this.names[i]}`);
       if (this.names[i]) {
-        restify.serve(appinstance, this.models[i], {
+        restify.serve(host.httpAdapter, this.models[i], {
           preCreate: this.authService.validateUserExternal,
           preUpdate: this.authService.validateUserExternal,
           preDelete: this.authService.validateUserExternal,
@@ -63,27 +98,10 @@ export class SchemasService implements OnModuleInit {
         });
       }
     }
-    this.addSwagger(this.swaggerDoc);
-    SwaggerModule.setup(`api/v${process.env.API_VERSION}/swagger`, this.app, this.swaggerDoc);
-  };
-
-  public createNameListFromDir(dir: string): string[] {
-    const fn: string[] = fs.readdirSync(dir);
-    return fn
-      .map(n => n.split('.')[1] == 'json' ? n.split('.')[0] : null)
-      .filter(n => n !== null);
   }
 
-  public createSchemasFromJSON(jsonlist: string[]): Schema<any>[] {
-    const schemalist: Schema<any>[] = [];
-    for (let i = 0; i < jsonlist.length; i++) {
-      if (/.*\.json/.test(jsonlist[i]) && !/_.*/.test(jsonlist[i])) {
-        const s = JSON.parse(fs.readFileSync(`${this.configService.get<string>('schemas.dir')}/${jsonlist[i]}`, 'utf8'));
-        schemalist[i] = new mongoose.Schema(this.converterService.convert(s));
-      }
-    }    
-    return schemalist;
-  }
+
+
 
   /**
    *
@@ -120,19 +138,23 @@ export class SchemasService implements OnModuleInit {
   /**
    *
    * @param swaggerDoc
+   * @param namelist
+   * @param schemalist
    */
-  public addSwagger(swaggerDoc: SwaggerDocument) {
-    for (let i = 0; i < this.names.length; i++) {
-      if (this.names[i]) {
-        console.log(`adding OpenAPI documentation for ${this.names[i]}`);
-        this.addMongooseAPISpec(swaggerDoc, this.names[i], this.schemas[i]);
-      }
+  private addSwagger(swaggerDoc: SwaggerDocument, namelist: string[], schemalist: Record<string, any>[]) {
+    for (let i = 0; i < namelist.length; i++) {
+      console.log(`adding OpenAPI documentation for ${namelist[i]}`);
+      this.addMongooseAPISpec(swaggerDoc, namelist[i], schemalist[i]);
     }
   }
 
+  /**
+   *
+   * @param doc
+   */
   public addSwaggerDefs (doc: SwaggerDocument): SwaggerDocument {
-    const fn = fs.readdirSync(this.configService.get<string>('schemas.dir'));
-
+    this.createSchemas();
+    this.addSwagger(doc, this.names, this.schemas);
     return doc;
   }
 
