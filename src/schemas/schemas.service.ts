@@ -36,7 +36,10 @@ export class SchemasService implements OnModuleInit {
 
     //if not there or faulty, create schemas
     //TODO: more checks on initial values
-    if(this.names.length < 1 || this.schemas.length < 1) this.createSchemas();
+    if(this.names.length < 1 ||
+       this.schemas.length < 1 ||
+       this.schemas.length !== this.names.length
+    ) this.initSchemas();
 
     //create models
     this.models = this.createModels(mongoose.connections[1], this.names, this.schemas);
@@ -70,9 +73,10 @@ export class SchemasService implements OnModuleInit {
   }
 
   /**
-   *
+   * Fetches Schemas from a given source and sets the schemas array
+   * as well as the names array
    */
-  public createSchemas(): boolean {
+  public initSchemas(): boolean {
     this.names = SchemasService.createNameListFromDir(this.configService.get<string>('schemas.dir'));
     this.schemas = this.createSchemasFromJSON(this.names.map(n => `${n}.json`));
     return true;
@@ -109,9 +113,6 @@ export class SchemasService implements OnModuleInit {
       }
     }
   }
-
-
-
 
   /**
    *
@@ -163,7 +164,7 @@ export class SchemasService implements OnModuleInit {
    * @param doc
    */
   public addSwaggerDefs (doc: SwaggerDocument): SwaggerDocument {
-    this.createSchemas();
+    this.initSchemas();
     SchemasService.addSwagger(doc, this.names, this.schemas);
     return doc;
   }
@@ -453,4 +454,3 @@ export class SchemasService implements OnModuleInit {
   };
 
 }
-
