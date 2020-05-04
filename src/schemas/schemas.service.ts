@@ -14,7 +14,6 @@ import * as fs from 'fs';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Schema, Connection } from "mongoose";
 import { User } from '../user/interfaces/user.interface';
-import { ForgotPassword } from '../user/interfaces/forgot-password.interface';
 
 @Injectable()
 export class SchemasService implements OnModuleInit {
@@ -46,6 +45,10 @@ export class SchemasService implements OnModuleInit {
     this.restifyModels(this.adapterHost);
   };
 
+  /**
+   *
+   * @param dir
+   */
   private static createNameListFromDir(dir: string): string[] {
     const fn: string[] = fs.readdirSync(dir);
     return fn
@@ -53,6 +56,10 @@ export class SchemasService implements OnModuleInit {
       .filter(n => n !== null);
   }
 
+  /**
+   *
+   * @param jsonlist
+   */
   private createSchemasFromJSON(jsonlist: string[]): Schema<any>[] {
     const schemalist: Schema<any>[] = [];
     for (let i = 0; i < jsonlist.length; i++) {
@@ -62,6 +69,9 @@ export class SchemasService implements OnModuleInit {
     return schemalist;
   }
 
+  /**
+   *
+   */
   public createSchemas(): boolean {
     this.names = SchemasService.createNameListFromDir(this.configService.get<string>('schemas.dir'));
     this.schemas = this.createSchemasFromJSON(this.names.map(n => `${n}.json`));
@@ -141,10 +151,10 @@ export class SchemasService implements OnModuleInit {
    * @param namelist
    * @param schemalist
    */
-  private addSwagger(swaggerDoc: SwaggerDocument, namelist: string[], schemalist: Record<string, any>[]) {
+  private static addSwagger(swaggerDoc: SwaggerDocument, namelist: string[], schemalist: Record<string, any>[]) {
     for (let i = 0; i < namelist.length; i++) {
       console.log(`adding OpenAPI documentation for ${namelist[i]}`);
-      this.addMongooseAPISpec(swaggerDoc, namelist[i], schemalist[i]);
+      SchemasService.addMongooseAPISpec(swaggerDoc, namelist[i], schemalist[i]);
     }
   }
 
@@ -154,7 +164,7 @@ export class SchemasService implements OnModuleInit {
    */
   public addSwaggerDefs (doc: SwaggerDocument): SwaggerDocument {
     this.createSchemas();
-    this.addSwagger(doc, this.names, this.schemas);
+    SchemasService.addSwagger(doc, this.names, this.schemas);
     return doc;
   }
 
@@ -164,7 +174,7 @@ export class SchemasService implements OnModuleInit {
    * @param name
    * @param schema
    */
-  private addMongooseAPISpec(swaggerSpec: SwaggerDocument, name: string, schema: Record<string, any>) {
+  private static addMongooseAPISpec(swaggerSpec: SwaggerDocument, name: string, schema: Record<string, any>) {
     swaggerSpec.paths[`/${name}/count`] = {
       'get': {
         'description': `Returns the number of documents of type ${name}`,
