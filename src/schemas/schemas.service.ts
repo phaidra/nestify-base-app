@@ -12,23 +12,22 @@ import restify from 'express-restify-mongoose';
 const mongoose = jsonSchema();
 import * as fs from 'fs';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from "mongoose";
+import { Model, Schema } from "mongoose";
 import { User } from '../user/interfaces/user.interface';
 import { ForgotPassword } from '../user/interfaces/forgot-password.interface';
 
 @Injectable()
 export class SchemasService implements OnModuleInit {
-  constructor( @InjectModel('User') private readonly userModel: Model<User>,
-               private readonly configService: ConfigService,
-              private readonly converterService: ConverterService,
-              private readonly adapterHost: HttpAdapterHost,
-              private readonly authService: AuthService,
+  constructor(
+    @InjectModel('User') private readonly userModel: Model<User>,
+    private readonly configService: ConfigService,
+    private readonly converterService: ConverterService,
+    private readonly adapterHost: HttpAdapterHost,
+    private readonly authService: AuthService,
   ) {};
 
-  readonly names: string[] = [];
-  readonly rawjson: Record<string, any>[] = [];
-  //TODO: extend basic schema def from mongoose with our extensions (virtuals, jsonschema)
-  readonly schemas: Record<string, any>[] = [];
+  public names: string[] = [];
+  public schemas: Record<string, any> = [];
   readonly models: Model<any>[] = [];
   public swaggerDoc: SwaggerDocument;
   public app: INestApplication = null;
@@ -37,18 +36,10 @@ export class SchemasService implements OnModuleInit {
    *
    */
   onModuleInit() {
-    const fn = fs.readdirSync(this.configService.get<string>('schemas.dir'));
 
-    //create schemas
-    for (let i = 0; i < fn.length; i++) {
-      if (/.*\.json/.test(fn[i]) && !/_.*/.test(fn[i])) {
-        console.log(`initializing schema ${fn[i]}.`);
-        const s = JSON.parse(fs.readFileSync(`${this.configService.get<string>('schemas.dir')}/${fn[i]}`, 'utf8'));
-        this.rawjson[i] = s;
-        this.names[i] = fn[i].split('.')[0];
-        this.schemas[i] = new mongoose.Schema(this.converterService.convert(s));
-      }
-    }
+    this.names = this.createNameListFromDir(this.configService.get<string>('schemas.dir'));
+    this.schemas = this.createSchemasFromJSON(this.names.map(n => `${n}.json`));
+
 
     //create models
     for (let i = 0; i < this.names.length; i++) {
@@ -75,6 +66,24 @@ export class SchemasService implements OnModuleInit {
     this.addSwagger(this.swaggerDoc);
     SwaggerModule.setup(`api/v${process.env.API_VERSION}/swagger`, this.app, this.swaggerDoc);
   };
+
+  public createNameListFromDir(dir: string): string[] {
+    const fn: string[] = fs.readdirSync(dir);
+    return fn
+      .map(n => n.split('.')[1] == 'json' ? n.split('.')[0] : null)
+      .filter(n => n !== null);
+  }
+
+  public createSchemasFromJSON(jsonlist: string[]): Schema<any>[] {
+    const schemalist: Schema<any>[] = [];
+    for (let i = 0; i < jsonlist.length; i++) {
+      if (/.*\.json/.test(jsonlist[i]) && !/_.*/.test(jsonlist[i])) {
+        const s = JSON.parse(fs.readFileSync(`${this.configService.get<string>('schemas.dir')}/${jsonlist[i]}`, 'utf8'));
+        schemalist[i] = new mongoose.Schema(this.converterService.convert(s));
+      }
+    }    
+    return schemalist;
+  }
 
   /**
    *
@@ -112,7 +121,7 @@ export class SchemasService implements OnModuleInit {
    *
    * @param swaggerDoc
    */
-  public addSwagger(swaggerDoc: Record<string, any>) {
+  public addSwagger(swaggerDoc: SwaggerDocument) {
     for (let i = 0; i < this.names.length; i++) {
       if (this.names[i]) {
         console.log(`adding OpenAPI documentation for ${this.names[i]}`);
@@ -121,13 +130,19 @@ export class SchemasService implements OnModuleInit {
     }
   }
 
+  public addSwaggerDefs (doc: SwaggerDocument): SwaggerDocument {
+    const fn = fs.readdirSync(this.configService.get<string>('schemas.dir'));
+
+    return doc;
+  }
+
   /**
    *
    * @param swaggerSpec
    * @param name
    * @param schema
    */
-  private addMongooseAPISpec(swaggerSpec: Record<string, any>, name: string, schema: Record<string, any>) {
+  private addMongooseAPISpec(swaggerSpec: SwaggerDocument, name: string, schema: Record<string, any>) {
     swaggerSpec.paths[`/${name}/count`] = {
       'get': {
         'description': `Returns the number of documents of type ${name}`,
