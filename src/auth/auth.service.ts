@@ -110,17 +110,14 @@ export class AuthService {
       token = request.headers.authorization.replace('Bearer ', '').replace(' ', '');
     } else if (request.body.token) {
       token = request.body.token.replace(' ', '');
-    }
-    if (request.query.token) {
+    } else if (request.query.token) {
       token = request.body.token.replace(' ', '');
     }
-    if (token) {
-      try {
-        token = this.crypt.decrypt(token);
-      } catch (err) {
-        return {error: 'token string malformed'};
-      }
-    }
+    else return {error: 'no token string found'}
+
+    token = this.decryptText(token);
+    if (token.error) return token.error;
+
     try {
       token = this.jwtService.verify(token);
       return token;
@@ -166,5 +163,17 @@ export class AuthService {
    */
   encryptText(text: string): string {
     return this.crypt.encrypt(text);
+  }
+
+  /**
+   *
+   * @param text
+   */
+  decryptText(text: string): string|Record<string, any> {
+    try {
+      return this.crypt.decrypt(text);
+    } catch (err) {
+      return {error: 'token string malformed'};
+    }
   }
 }
