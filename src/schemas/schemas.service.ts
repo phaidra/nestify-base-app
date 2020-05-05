@@ -35,7 +35,6 @@ export class SchemasService implements OnModuleInit {
   onModuleInit() {
 
     //if not there or faulty, create schemas
-    //TODO: more checks on initial values
     if(this.names.length < 1 ||
        this.schemas.length !== this.names.length
     ) this.initSchemas();
@@ -76,6 +75,10 @@ export class SchemasService implements OnModuleInit {
    * as well as the names array
    */
   public initSchemas(): boolean {
+    //TODO switch for other schema sources such as
+    // owl files
+    // shacle defs
+    // ?
     this.names = SchemasService.createNameListFromDir(this.configService.get<string>('schemas.dir'));
     this.schemas = this.createSchemasFromJSON(this.names.map(n => `${n}.json`));
     return true;
