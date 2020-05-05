@@ -398,7 +398,7 @@ export class SchemasService implements OnModuleInit {
           },
         ],
         'responses': {
-          200: {
+          204: {
             'description': 'Deleted document with given ID',
           },
           404: {
