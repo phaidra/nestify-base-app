@@ -103,14 +103,12 @@ export class SchemasService implements OnModuleInit {
    */
   private restifyModels(host: HttpAdapterHost) {
     for (let i = 0; i < this.names.length; i++) {
-      if (this.names[i]) {
-        restify.serve(host.httpAdapter, this.models[i], {
-          preCreate: this.authService.validateUserExternal,
-          preUpdate: this.authService.validateUserExternal,
-          preDelete: this.authService.validateUserExternal,
-          totalCountHeader: true,
-        });
-      }
+      restify.serve(host.httpAdapter, this.models[i], {
+        preCreate: this.authService.validateUserExternal,
+        preUpdate: this.authService.validateUserExternal,
+        preDelete: this.authService.validateUserExternal,
+        totalCountHeader: true,
+      });
     }
   }
 
@@ -139,7 +137,6 @@ export class SchemasService implements OnModuleInit {
   public jsonSchemaByName(name: string) {
     for (let i = 0; i < this.names.length; i++) {
       if (name == this.names[i]) {
-        //we may need put some additional logic here, if front end needs it
         return this.schemas[i].jsonSchema();
       }
     }
@@ -152,11 +149,11 @@ export class SchemasService implements OnModuleInit {
    * @param namelist
    * @param schemalist
    */
-  private static addSwagger(swaggerDoc: SwaggerDocument, namelist: string[], schemalist: Record<string, any>[]) {
+  private static addSwagger(swaggerDoc: SwaggerDocument, namelist: string[], schemalist: Record<string, any>[]): SwaggerDocument {
     for (let i = 0; i < namelist.length; i++) {
-      console.log(`adding OpenAPI documentation for ${namelist[i]}`);
       SchemasService.addMongooseAPISpec(swaggerDoc, namelist[i], schemalist[i]);
     }
+    return swaggerDoc;
   }
 
   /**
