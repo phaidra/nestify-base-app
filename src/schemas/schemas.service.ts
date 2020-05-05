@@ -37,7 +37,6 @@ export class SchemasService implements OnModuleInit {
     //if not there or faulty, create schemas
     //TODO: more checks on initial values
     if(this.names.length < 1 ||
-       this.schemas.length < 1 ||
        this.schemas.length !== this.names.length
     ) this.initSchemas();
 
