@@ -112,14 +112,14 @@ export class AuthService {
     if (request.query.token) {
       token = request.body.token.replace(' ', '');
     }
-    const crypt = new Cryptr(process.env.JWT_SECRET);
     if (token) {
       try {
-        token = crypt.decrypt(token);
+        token = this.crypt.decrypt(token);
       } catch (err) {
         throw new BadRequestException('Bad request.');
       }
     }
+    token = this.jwtService.decode(token);
     return token;
   }
 

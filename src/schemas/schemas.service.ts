@@ -255,6 +255,11 @@ export class SchemasService implements OnModuleInit {
         'tags': [
           `${name}`,
         ],
+        'security': [
+          {
+            'bearer': [],
+          }
+        ],
       },
       'delete': {
         'description': `Deletes the entire contents of collection ${name}`,
@@ -266,6 +271,11 @@ export class SchemasService implements OnModuleInit {
         },
         'tags': [
           `${name}`,
+        ],
+        'security': [
+          {
+            'bearer': [],
+          }
         ],
       },
     };
@@ -332,6 +342,11 @@ export class SchemasService implements OnModuleInit {
         'tags': [
           `${name}`,
         ],
+        'security': [
+          {
+            'bearer': [],
+          }
+        ],
       },
       'patch': {
         'description': 'Partially updates the document with the given ID',
@@ -364,6 +379,11 @@ export class SchemasService implements OnModuleInit {
         'tags': [
           `${name}`,
         ],
+        'security': [
+          {
+            'bearer': [],
+          }
+        ],
       },
       'delete': {
         'description': 'Deletes the document with the given ID',
@@ -387,6 +407,11 @@ export class SchemasService implements OnModuleInit {
         },
         'tags': [
           `${name}`,
+        ],
+        'security': [
+          {
+            'bearer': [],
+          }
         ],
       },
     };
