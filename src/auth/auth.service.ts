@@ -85,12 +85,14 @@ export class AuthService {
    */
   async validateUserExternal(req: Request, res: Response, next: NextFunction): Promise<any> {
     const jwtPayload = this.jwtExtractor(req);
-    if(!jwtPayload) {
-      res.status(401).json({error:'Session token invalid.'});
+    if(!jwtPayload.userId) {
+      res.status(401).json(jwtPayload);
+      return null;
     }
     const user = await this.userModel.findOne({ _id: jwtPayload.userId, verified: true });
     if (!user) {
       res.status(401).json({error:'User not found.'});
+      return null;
     }
     next();
     return user;
@@ -116,11 +118,15 @@ export class AuthService {
       try {
         token = this.crypt.decrypt(token);
       } catch (err) {
-        throw new BadRequestException('Bad request.');
+        return {error: 'token string malformed'};
       }
     }
-    token = this.jwtService.decode(token);
-    return token;
+    try {
+      token = this.jwtService.verify(token);
+      return token;
+    } catch (err) {
+      return err;
+    }
   }
 
   /**
