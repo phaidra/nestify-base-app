@@ -38,7 +38,7 @@ export class UserService {
     await this.isEmailUnique(user.email);
     this.setRegistrationInfo(user);
     await user.save();
-    return this.buildRegistrationInfo(user);
+    return UserService.buildRegistrationInfo(user);
   }
 
   /**
@@ -48,7 +48,7 @@ export class UserService {
    */
   async verifyEmail(req: Request, verifyUuidDto: VerifyUuidDto) {
     const user = await this.findByVerification(verifyUuidDto.verification);
-    await this.setUserAsVerified(user);
+    await UserService.setUserAsVerified(user);
     return {
       fullName: user.fullName,
       email: user.email,
@@ -64,9 +64,9 @@ export class UserService {
    */
   async login(req: Request, loginUserDto: LoginUserDto) {
     const user = await this.findUserByEmail(loginUserDto.email);
-    this.isUserBlocked(user);
+    UserService.isUserBlocked(user);
     await this.checkPassword(loginUserDto.password, user);
-    await this.passwordsAreMatch(user);
+    await UserService.passwordsAreMatch(user);
     return {
       fullName: user.fullName,
       email: user.email,
@@ -124,7 +124,7 @@ export class UserService {
    */
   async resetPassword(resetPasswordDto: ResetPasswordDto) {
     const forgotPassword = await this.findForgotPasswordByEmail(resetPasswordDto);
-    await this.setForgotPasswordFinalUsed(forgotPassword);
+    await UserService.setForgotPasswordFinalUsed(forgotPassword);
     await this.resetUserPassword(resetPasswordDto);
     return {
       email: resetPasswordDto.email,
@@ -133,7 +133,7 @@ export class UserService {
   }
 
   async findAll() {
-    return await this.userModel.find();
+    return this.userModel.find();
   }
 
   /**
