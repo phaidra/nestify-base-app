@@ -1,6 +1,6 @@
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { Request } from 'express';
-import { AuthService } from './../auth/auth.service';
+import { AuthService } from '../auth/auth.service';
 import { LoginUserDto } from './dto/login-user.dto';
 import { Injectable, BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -132,8 +132,8 @@ export class UserService {
     };
   }
 
-  findAll(): any {
-    return { hello: 'world' };
+  async findAll() {
+    return await this.userModel.find();
   }
 
   /**
@@ -160,13 +160,12 @@ export class UserService {
    * builds registration info record for newly registered user
    * @param user
    */
-  private buildRegistrationInfo(user): any {
-    const userRegistrationInfo = {
+  private static buildRegistrationInfo(user): any {
+    return {
       fullName: user.fullName,
       email: user.email,
       verified: user.verified,
     };
-    return userRegistrationInfo;
   }
 
   /**
@@ -190,7 +189,7 @@ export class UserService {
    * sets newly registered user as verified
    * @param user
    */
-  private async setUserAsVerified(user) {
+  private static async setUserAsVerified(user) {
     user.verified = true;
     await user.save();
   }
@@ -216,7 +215,7 @@ export class UserService {
     return match;
   }
 
-  private isUserBlocked(user) {
+  private static isUserBlocked(user) {
     if (user.blockExpires > Date.now()) {
       throw new ConflictException('User has been blocked try later.');
     }
@@ -236,7 +235,7 @@ export class UserService {
     await user.save();
   }
 
-  private async passwordsAreMatch(user) {
+  private static async passwordsAreMatch(user) {
     user.loginAttempts = 0;
     await user.save();
   }
@@ -287,7 +286,7 @@ export class UserService {
     return forgotPassword;
   }
 
-  private async setForgotPasswordFinalUsed(forgotPassword: ForgotPassword) {
+  private static async setForgotPasswordFinalUsed(forgotPassword: ForgotPassword) {
     forgotPassword.finalUsed = true;
     await forgotPassword.save();
   }

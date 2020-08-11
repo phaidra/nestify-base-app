@@ -1,4 +1,4 @@
-import { Roles } from './../auth/decorators/roles.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { CreateForgotPasswordDto } from './dto/create-forgot-password.dto';
 import { Request } from 'express';
@@ -7,7 +7,7 @@ import { Controller, Get, Post, Body, UseGuards, Req, HttpCode, HttpStatus } fro
 import { CreateUserDto } from './dto/create-user.dto';
 import { VerifyUuidDto } from './dto/verify-uuid.dto';
 import { UserService } from './user.service';
-import { AuthGuard, PassportModule } from '@nestjs/passport';
+import { AuthGuard } from '@nestjs/passport';
 import { RefreshAccessTokenDto } from './dto/refresh-access-token.dto';
 import {
     ApiCreatedResponse,
@@ -92,10 +92,10 @@ export class UserController {
     }
 
     @Get('data')
+    @ApiBearerAuth()
     @UseGuards(AuthGuard('jwt'))
     @Roles('admin')
     @HttpCode(HttpStatus.OK)
-    @ApiBearerAuth()
     @ApiOkResponse({description: 'Data recieved'})
     @ApiUnauthorizedResponse({ description: 'Not authorized.'})
     @ApiForbiddenResponse({description: 'Insufficient Rights.'})

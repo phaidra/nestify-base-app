@@ -84,7 +84,14 @@ export class AuthService {
    * @param next
    */
   async validateUserExternal(req: Request, res: Response, next: NextFunction): Promise<any> {
-    const jwtPayload = this.jwtExtractor(req);
+    let jwtPayload = this.jwtExtractor(req);
+
+    try {
+      jwtPayload = this.jwtService.verify(jwtPayload);
+    } catch (err) {
+      return err;
+    }
+
     if(!jwtPayload.userId) {
       res.status(401).json(jwtPayload);
       return null;
@@ -117,20 +124,14 @@ export class AuthService {
 
     token = this.decryptText(token);
     if (token.error) return token.error;
-
-    try {
-      token = this.jwtService.verify(token);
-      return token;
-    } catch (err) {
-      return err;
-    }
+    return token;
   }
 
   /**
    * returns private jwtExtractor for external use
    */
   returnJwtExtractor() {
-    return this.jwtExtractor;
+    return this.jwtExtractor.bind(this);
   }
 
   /**
