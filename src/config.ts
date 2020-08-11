@@ -31,8 +31,8 @@ export default () => ({
     'importcol': 'import',
   },
   'assets': {
-    'dir': './asset/uploads/files',
-    'thumbs': './asset/uploads/thumbs',
+    'dir': './assets/uploads/files',
+    'thumbs': './assets/uploads/thumbs',
     'IIIFDropZone': '',
   },
   'version': '1',

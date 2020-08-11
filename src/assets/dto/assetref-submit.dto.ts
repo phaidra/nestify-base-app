@@ -1,13 +1,13 @@
-import { IsNotEmpty, MinLength, MaxLength, IsEmail, IsString } from 'class-validator';
+import { IsNotEmpty, MinLength, MaxLength, IsString } from 'class-validator';
 import { ApiModelProperty } from '@nestjs/swagger';
 
 export class LoginUserDto {
 
   @ApiModelProperty({
-    example: 'nondef@nondef.net',
-    description: 'The email of the User',
-    format: 'email',
-    uniqueItems: true,
+    example: 'Name of my Asset',
+    description: 'A verbose name for asset uploaded',
+    format: 'string',
+    uniqueItems: false,
     minLength: 5,
     maxLength: 255,
   })
@@ -15,19 +15,25 @@ export class LoginUserDto {
   @IsString()
   @MinLength(5)
   @MaxLength(255)
-  @IsEmail()
-  readonly email: string;
+  readonly name: string;
 
   @ApiModelProperty({
-    example: 'secret password change me!',
-    description: 'The password of the User',
+    example: 'https://arche.acdh.oeaw.ac.at/api/30427',
+    description: 'An identifier of the asset in a secondary repository.',
     format: 'string',
-    minLength: 5,
     maxLength: 1024,
   })
-  @IsNotEmpty()
   @IsString()
-  @MinLength(5)
   @MaxLength(1024)
-  readonly password: string;
+  readonly identifier: string;
+
+  @ApiModelProperty({
+    example: 'British Museum London',
+    description: 'A verbose name or description of the origin of the image.',
+    format: 'string',
+    maxLength: 1024,
+  })
+  @IsString()
+  @MaxLength(1024)
+  readonly source: string;
 }
