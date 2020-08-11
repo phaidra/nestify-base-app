@@ -9,6 +9,7 @@ import { AppService } from './app.service';
 import { SchemasModule } from './schemas/schemas.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { AssetsModule } from './assets/assets.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { AuthModule } from './auth/auth.module';
     SchemasModule,
     UserModule,
     AuthModule,
+    AssetsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
