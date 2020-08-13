@@ -22,7 +22,10 @@ export class AssetsService {
       mimetype: fileinfo.mimetype,
     }
     const asset = new this.assetRefModel(assetdoc);
-    await asset.save();
-    return
+    return await asset.save();
+  }
+
+  async createThumb(fileinfo): Promise<any> {
+    console.log(fileinfo);
   }
 }

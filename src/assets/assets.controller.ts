@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, Res, Get, Param, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AssetsService } from './assets.service';
 import { AssetrefSubmitDto} from './dto/assetref-submit.dto';
 import {
@@ -6,7 +6,7 @@ import {
   ApiBadRequestResponse,
   ApiUnauthorizedResponse,
   ApiUseTags,
-  ApiBearerAuth, ApiConsumes, ApiImplicitFile,
+  ApiBearerAuth, ApiConsumes, ApiImplicitFile, ApiOkResponse, ApiNotFoundResponse, ApiImplicitParam,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
@@ -29,9 +29,17 @@ export class AssetsController {
   @ApiUnauthorizedResponse({ description: 'Not authorized.'})
   @ApiBadRequestResponse({description: 'Data validation failed or Bad request..'})
   async uploadFile(@UploadedFile() file, @Body() assetMD: AssetrefSubmitDto) {
-    console.log(file);
-    console.log(assetMD);
+
     return await this.assetsService.submitAsset(assetMD, file)
+  }
+
+  @Get(':imgpath')
+  @HttpCode(HttpStatus.OK)
+  @ApiImplicitParam({ name: 'imgpath', required: true })
+  @ApiOkResponse({description: 'Data recieved'})
+  @ApiNotFoundResponse({description: 'File not found'})
+  seeUploadedFile(@Param('imgpath') image, @Res() res) {
+    return res.sendFile(image, { root: './' });
   }
 
 }
