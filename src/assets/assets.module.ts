@@ -3,6 +3,8 @@ import { AssetsController } from './assets.controller';
 import { AssetsService } from './assets.service';
 import { MulterModule } from '@nestjs/platform-express';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { AssetsSchema} from './assets.schema';
 
 @Module({
   imports: [
@@ -13,6 +15,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       }),
       inject: [ConfigService],
     }),
+    MongooseModule.forFeature([{ name: 'Asset', schema: AssetsSchema }]),
   ],
   controllers: [AssetsController],
   providers: [AssetsService]

@@ -28,9 +28,10 @@ export class AssetsController {
   @ApiCreatedResponse({description: 'Your File(s) have been uploaded successfully.'})
   @ApiUnauthorizedResponse({ description: 'Not authorized.'})
   @ApiBadRequestResponse({description: 'Data validation failed or Bad request..'})
-  uploadFile(@UploadedFile() file, @Body() assetMD: AssetrefSubmitDto) {
+  async uploadFile(@UploadedFile() file, @Body() assetMD: AssetrefSubmitDto) {
     console.log(file);
     console.log(assetMD);
+    return await this.assetsService.submitAsset(assetMD, file)
   }
 
 }
