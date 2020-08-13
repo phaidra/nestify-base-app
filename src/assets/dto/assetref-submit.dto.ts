@@ -1,7 +1,7 @@
 import { IsNotEmpty, MinLength, MaxLength, IsString } from 'class-validator';
 import { ApiModelProperty } from '@nestjs/swagger';
 
-export class LoginUserDto {
+export class AssetrefSubmitDto {
 
   @ApiModelProperty({
     example: 'Name of my Asset',

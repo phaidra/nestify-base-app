@@ -1,6 +1,8 @@
 # compiled output
 /dist
 /node_modules
+/assets/uploads/files/*
+/assets/uploads/thumbnails/*
 
 # Logs
 logs
