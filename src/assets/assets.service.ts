@@ -12,11 +12,11 @@ export class AssetsService {
   ) {
   }
 
-  async submitAsset(assetrefSubmitDto: AssetrefSubmitDto, fileinfo): Promise<Assetref> {
+  async submitAsset(fileinfo, AssetMD: AssetrefSubmitDto): Promise<Assetref> {
     const assetdoc = {
-      name: assetrefSubmitDto.name ? assetrefSubmitDto.name:fileinfo.originalname,
-      identifier: assetrefSubmitDto.identifier,
-      source: assetrefSubmitDto.source,
+      name: AssetMD.name ? AssetMD.name:fileinfo.originalname,
+      identifier: AssetMD.identifier,
+      source: AssetMD.source,
       originalname: fileinfo.originalname,
       path: fileinfo.path,
       size: fileinfo.size,

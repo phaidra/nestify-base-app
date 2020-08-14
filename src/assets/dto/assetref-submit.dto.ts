@@ -36,5 +36,8 @@ export class AssetrefSubmitDto {
   @IsString()
   @MaxLength(1024)
   readonly source: string;
+
+  @ApiProperty({ type: 'string', format: 'binary' })
+  file: any;
 }
 
