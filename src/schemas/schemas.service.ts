@@ -1,7 +1,7 @@
 import { HttpAdapterHost } from '@nestjs/core';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SwaggerDocument } from '@nestjs/swagger';
+import { OpenAPIObject } from '@nestjs/swagger';
 import { ConverterService } from './converter.service';
 import { AuthService } from '../auth/auth.service';
 
@@ -66,7 +66,7 @@ export class SchemasService implements OnModuleInit {
     for (let i = 0; i < jsonlist.length; i++) {
       const s = JSON.parse(fs.readFileSync(`${this.configService.get<string>('schemas.dir')}/${jsonlist[i]}`, 'utf8'));
       schemalist[i] = new mongoose.Schema(this.converterService.convert(s));
-    }    
+    }
     return schemalist;
   }
 
@@ -151,7 +151,7 @@ export class SchemasService implements OnModuleInit {
    * @param namelist
    * @param schemalist
    */
-  private static addSwagger(swaggerDoc: SwaggerDocument, namelist: string[], schemalist: Record<string, any>[]): SwaggerDocument {
+  private static addSwagger(swaggerDoc: OpenAPIObject, namelist: string[], schemalist: Record<string, any>[]): OpenAPIObject {
     for (let i = 0; i < namelist.length; i++) {
       SchemasService.addMongooseAPISpec(swaggerDoc, namelist[i], schemalist[i]);
     }
@@ -162,7 +162,7 @@ export class SchemasService implements OnModuleInit {
    *
    * @param doc
    */
-  public addSwaggerDefs (doc: SwaggerDocument): SwaggerDocument {
+  public addSwaggerDefs (doc: OpenAPIObject): OpenAPIObject {
     this.initSchemas();
     SchemasService.addSwagger(doc, this.names, this.schemas);
     return doc;
@@ -174,11 +174,10 @@ export class SchemasService implements OnModuleInit {
    * @param name
    * @param schema
    */
-  private static addMongooseAPISpec(swaggerSpec: SwaggerDocument, name: string, schema: Record<string, any>) {
+  private static addMongooseAPISpec(swaggerSpec: OpenAPIObject, name: string, schema: Record<string, any>) {
     swaggerSpec.paths[`/${name}/count`] = {
       'get': {
         'description': `Returns the number of documents of type ${name}`,
-        'produces': ['application/json'],
         'responses': {
           200: {
             'description': `Document Count of ${name}`,
@@ -192,43 +191,46 @@ export class SchemasService implements OnModuleInit {
     swaggerSpec.paths[`/${name}`] = {
       'get': {
         'description': `Returns a List of ${name}s`,
-        'produces': ['application/json'],
         'parameters': [
           {
             'name': 'sort',
             'description': 'Key Name to Sort by, preceded by \'-\' for descending, default: _id',
             'in': 'query',
-            'type': 'string',
+            'schema': { type: 'string' },
           },
           {
             'name': 'skip',
             'description': 'Number of records to skip from start, default: 0',
             'in': 'query',
-            'type': 'integer',
+            'schema': { type: 'string' },
           },
           {
             'name': 'limit',
             'description': 'Number of records to return, default: 10',
             'in': 'query',
-            'type': 'integer',
+            'schema': { type: 'string' },
           },
           {
             'name': 'query',
             'description': 'MongoDB Query as a well formed JSON String, ie {"name":"Bob"}',
             'in': 'query',
-            'type': 'string',
+            'schema': { type: 'string' },
           },
           {
             'name': 'populate',
             'description': 'Path to a MongoDB reference to populate, ie [{"path":"customer"},{"path":"products"}]',
             'in': 'query',
-            'type': 'string',
+            'schema': { type: 'string' },
           },
         ],
         'responses': {
           200: {
             'description': `Returns a List of ${name}`,
-            'schema': { '$ref': `#/definitions/${name}` },
+            'content':{
+              'application/json': {
+                'schema': { '$ref': `#/components/schemas/${name}` },
+              },
+            },
           },
         },
         'tags': [
@@ -237,18 +239,21 @@ export class SchemasService implements OnModuleInit {
       },
       'post': {
         'description': `Creates a new instance of ${name}`,
-        'produces': ['application/json'],
-        'consumes': ['application/json'],
-        'parameters': [{
-          'name': name,
-          'in': 'body',
-          'required': true,
-          'schema': { '$ref': `#/definitions/${name}` },
-        }],
+        'requestBody': {
+          content: {
+            'application/json': {
+              'schema': { '$ref': `#/components/schemas/${name}` },
+            }
+          }
+        },
         'responses': {
           200: {
             'description': `The created instance of ${name}`,
-            'schema': { '$ref': `#/definitions/${name}` },
+            'content':{
+              'application/json': {
+                'schema': { '$ref': `#/components/schemas/${name}` },
+              },
+            },
           },
         },
         'tags': [
@@ -262,7 +267,6 @@ export class SchemasService implements OnModuleInit {
       },
       'delete': {
         'description': `Deletes the entire contents of collection ${name}`,
-        'produces': ['application/json'],
         'responses': {
           200: {
             'description': `Emptied Collection ${name}`,
@@ -281,26 +285,29 @@ export class SchemasService implements OnModuleInit {
     swaggerSpec.paths[`/${name}/{id}`] = {
       'get': {
         'description': `Returns the specified document of type ${name}`,
-        'produces': ['application/json'],
         'parameters': [
           {
             'name': 'id',
             'description': 'MongoDB document _id',
             'in': 'path',
-            'type': 'string',
+            'schema': { type: 'string' },
             'required': true,
           },
           {
             'name': 'populate',
             'description': 'Path to a MongoDB reference to populate, ie [{"path":"customer"},{"path":"products"}]',
             'in': 'query',
-            'type': 'string',
+            'schema': { type: 'string' },
           },
         ],
         'responses': {
           200: {
             'description': `Returns document with requested ID from collection ${name}`,
-            'schema': { '$ref': `#/definitions/${name}` },
+            'content':{
+              'application/json': {
+                'schema': { '$ref': `#/components/schemas/${name}` },
+              },
+            },
           },
           404: {
             'description': `No document found with requested ID in collection ${name}`,
@@ -312,27 +319,30 @@ export class SchemasService implements OnModuleInit {
       },
       'post': {
         'description': 'Updates the document with the given ID',
-        'produces': ['application/json'],
-        'consumes': ['application/json'],
         'parameters': [
           {
             'name': 'id',
             'description': 'MongoDB document _id',
             'in': 'path',
-            'type': 'string',
+            'schema': { type: 'string' },
             'required': true,
-          },
-          {
-            'name': name,
-            'in': 'body',
-            'required': true,
-            'schema': { '$ref': `#/definitions/${name}` },
           },
         ],
+        'requestBody': {
+          content: {
+            'application/json': {
+              'schema': { '$ref': `#/components/schemas/${name}` },
+            }
+          }
+        },
         'responses': {
           200: {
             'description': `The updated instance of ${name}`,
-            'schema': { '$ref': `#/definitions/${name}` },
+            'content':{
+              'application/json': {
+                'schema': { '$ref': `#/components/schemas/${name}` },
+              },
+            },
           },
           404: {
             'description': `No document found with requested ID in collection ${name}`,
@@ -349,27 +359,30 @@ export class SchemasService implements OnModuleInit {
       },
       'patch': {
         'description': 'Partially updates the document with the given ID',
-        'produces': ['application/json'],
-        'consumes': ['application/json'],
         'parameters': [
           {
             'name': 'id',
             'description': 'MongoDB document _id',
             'in': 'path',
-            'type': 'string',
+            'schema': { type: 'string' },
             'required': true,
-          },
-          {
-            'name': name,
-            'in': 'body',
-            'required': true,
-            'schema': { '$ref': `#/definitions/${name}` },
           },
         ],
+        'requestBody': {
+          content: {
+            'application/json': {
+              'schema': { '$ref': `#/components/schemas/${name}` },
+            }
+          }
+        },
         'responses': {
           200: {
             'description': `The updated instance of ${name}`,
-            'schema': { '$ref': `#/definitions/${name}` },
+            'content':{
+              'application/json': {
+                'schema': { '$ref': `#/components/schemas/${name}` },
+              },
+            },
           },
           404: {
             'description': `No document found with requested ID in collection ${name}`,
@@ -386,13 +399,12 @@ export class SchemasService implements OnModuleInit {
       },
       'delete': {
         'description': 'Deletes the document with the given ID',
-        'produces': ['application/json'],
         'parameters': [
           {
             'name': 'id',
             'description': 'MongoDB document _id',
             'in': 'path',
-            'type': 'string',
+            'schema': { type: 'string' },
             'required': true,
           },
         ],
@@ -414,7 +426,7 @@ export class SchemasService implements OnModuleInit {
         ],
       },
     };
-    swaggerSpec.definitions[name] = schema.jsonSchema();
+    swaggerSpec.components.schemas[name] = schema.jsonSchema();
   };
 
   /**

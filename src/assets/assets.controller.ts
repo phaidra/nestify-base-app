@@ -7,12 +7,12 @@ import {
   ApiTags,
   ApiBearerAuth, ApiConsumes, ApiOkResponse, ApiNotFoundResponse, ApiParam,
 } from '@nestjs/swagger';
+import { ApiFile } from './api-file.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
 
 import { AssetsService } from './assets.service';
 import { AssetrefSubmitDto} from './dto/assetref-submit.dto';
-
 
 @ApiTags('Assets')
 @Controller('assets')
@@ -28,12 +28,11 @@ export class AssetsController {
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
-  @ApiFile({ name: 'file', required: true })
+  @ApiFile('file')
   @ApiCreatedResponse({description: 'Your File(s) have been uploaded successfully.'})
   @ApiUnauthorizedResponse({ description: 'Not authorized.'})
   @ApiBadRequestResponse({description: 'Data validation failed or Bad request..'})
   async uploadFile(@UploadedFile() file, @Body() assetMD: AssetrefSubmitDto) {
-
     return await this.assetsService.submitAsset(assetMD, file)
   }
 
