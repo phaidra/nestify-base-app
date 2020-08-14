@@ -175,7 +175,7 @@ export class SchemasService implements OnModuleInit {
    * @param schema
    */
   private static addMongooseAPISpec(swaggerSpec: OpenAPIObject, name: string, schema: Record<string, any>) {
-    swaggerSpec.paths[`/${name}/count`] = {
+    swaggerSpec.paths[`/api/v${process.env.API_VERSION}/${name}/count`] = {
       'get': {
         'description': `Returns the number of documents of type ${name}`,
         'responses': {
@@ -188,7 +188,7 @@ export class SchemasService implements OnModuleInit {
         ],
       },
     };
-    swaggerSpec.paths[`/${name}`] = {
+    swaggerSpec.paths[`/api/v${process.env.API_VERSION}/${name}`] = {
       'get': {
         'description': `Returns a List of ${name}s`,
         'parameters': [
@@ -282,7 +282,7 @@ export class SchemasService implements OnModuleInit {
         ],
       },
     };
-    swaggerSpec.paths[`/${name}/{id}`] = {
+    swaggerSpec.paths[`/api/v${process.env.API_VERSION}/${name}/{id}`] = {
       'get': {
         'description': `Returns the specified document of type ${name}`,
         'parameters': [
