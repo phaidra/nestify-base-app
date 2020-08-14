@@ -17,7 +17,6 @@ async function bootstrap() {
     .setDescription(app.get('ConfigService').get('meta.description'))
     .setVersion(process.env.API_VERSION)
     .addBearerAuth({type: 'http', scheme: 'bearer', bearerFormat: 'JWT'}, 'bearer')
-    .setBasePath(`api/v${process.env.API_VERSION}`)
     .build();
   const document = SwaggerModule.createDocument(app, options, {
     include: [

@@ -245,9 +245,9 @@ export class UserService {
       email: createForgotPasswordDto.email,
       verification: v4(),
       expires: addHours(new Date(), this.HOURS_TO_VERIFY),
-      ip: this.authService.getIp(req),
-      browser: this.authService.getBrowserInfo(req),
-      country: this.authService.getCountry(req),
+      ipRequest: this.authService.getIp(req),
+      browserRequest: this.authService.getBrowserInfo(req),
+      countryRequest: this.authService.getCountry(req),
     });
     await forgotPassword.save();
   }
