@@ -17,12 +17,12 @@ import {
     ApiUnauthorizedResponse,
     ApiOkResponse,
     ApiForbiddenResponse,
-    ApiUseTags,
+    ApiTags,
     ApiBearerAuth,
     } from '@nestjs/swagger';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 
-@ApiUseTags('User')
+@ApiTags('User')
 @Controller('user')
 @UseGuards(RolesGuard)
 export class UserController {

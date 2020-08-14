@@ -4,8 +4,8 @@ import {
   ApiCreatedResponse,
   ApiBadRequestResponse,
   ApiUnauthorizedResponse,
-  ApiUseTags,
-  ApiBearerAuth, ApiConsumes, ApiImplicitFile, ApiOkResponse, ApiNotFoundResponse, ApiImplicitParam,
+  ApiTags,
+  ApiBearerAuth, ApiConsumes, ApiOkResponse, ApiNotFoundResponse, ApiParam,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
@@ -14,7 +14,7 @@ import { AssetsService } from './assets.service';
 import { AssetrefSubmitDto} from './dto/assetref-submit.dto';
 
 
-@ApiUseTags('Assets')
+@ApiTags('Assets')
 @Controller('assets')
 export class AssetsController {
   constructor(
@@ -28,7 +28,7 @@ export class AssetsController {
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
-  @ApiImplicitFile({ name: 'file', required: true })
+  @ApiFile({ name: 'file', required: true })
   @ApiCreatedResponse({description: 'Your File(s) have been uploaded successfully.'})
   @ApiUnauthorizedResponse({ description: 'Not authorized.'})
   @ApiBadRequestResponse({description: 'Data validation failed or Bad request..'})
@@ -39,7 +39,7 @@ export class AssetsController {
 
   @Get(':imgpath')
   @HttpCode(HttpStatus.OK)
-  @ApiImplicitParam({ name: 'imgpath', required: true })
+  @ApiParam({ name: 'imgpath', required: true })
   @ApiOkResponse({description: 'Data recieved'})
   @ApiNotFoundResponse({description: 'File not found'})
   seeUploadedFile(@Param('imgpath') image, @Res() res) {

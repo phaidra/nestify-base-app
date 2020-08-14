@@ -1,9 +1,9 @@
 import { IsNotEmpty, MinLength, MaxLength, IsString } from 'class-validator';
-import { ApiModelProperty } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class AssetrefSubmitDto {
 
-  @ApiModelProperty({
+  @ApiProperty({
     example: 'Name of my Asset',
     description: 'A verbose name for asset uploaded',
     format: 'string',
@@ -17,7 +17,7 @@ export class AssetrefSubmitDto {
   @MaxLength(255)
   readonly name: string;
 
-  @ApiModelProperty({
+  @ApiProperty({
     example: 'https://arche.acdh.oeaw.ac.at/api/30427',
     description: 'An identifier of the asset in a secondary repository.',
     format: 'string',
@@ -27,7 +27,7 @@ export class AssetrefSubmitDto {
   @MaxLength(1024)
   readonly identifier: string;
 
-  @ApiModelProperty({
+  @ApiProperty({
     example: 'British Museum London',
     description: 'A verbose name or description of the origin of the image.',
     format: 'string',
@@ -37,3 +37,4 @@ export class AssetrefSubmitDto {
   @MaxLength(1024)
   readonly source: string;
 }
+

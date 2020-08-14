@@ -10,10 +10,10 @@ import { SchemasService } from './schemas.service';
 import {
   ApiNotFoundResponse,
   ApiOkResponse,
-  ApiUseTags,
+  ApiTags,
 } from '@nestjs/swagger';
 
-@ApiUseTags('Root')
+@ApiTags('Root')
 @Controller()
 export class SchemasController {
   constructor(private schemasService: SchemasService) {
