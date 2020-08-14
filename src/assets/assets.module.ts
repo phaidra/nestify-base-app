@@ -5,19 +5,23 @@ import { MulterModule } from '@nestjs/platform-express';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AssetsSchema} from './assets.schema';
+import { diskStorage } from 'multer';
 
 @Module({
   imports: [
     MulterModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        dest: configService.get<string>('assets.dir'),
+        storage: diskStorage({
+          destination: configService.get<string>('assets.dir'),
+          filename: AssetsService.editFileName,
+        }),
       }),
       inject: [ConfigService],
     }),
     MongooseModule.forFeature([{ name: 'Asset', schema: AssetsSchema }]),
   ],
   controllers: [AssetsController],
-  providers: [AssetsService]
+  providers: [AssetsService, ConfigService]
 })
 export class AssetsModule {}

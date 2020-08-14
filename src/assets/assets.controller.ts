@@ -1,6 +1,5 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, Res, Get, Param, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
-import { AssetsService } from './assets.service';
-import { AssetrefSubmitDto} from './dto/assetref-submit.dto';
+import { ConfigService } from '@nestjs/config';
 import {
   ApiCreatedResponse,
   ApiBadRequestResponse,
@@ -11,11 +10,16 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
 
+import { AssetsService } from './assets.service';
+import { AssetrefSubmitDto} from './dto/assetref-submit.dto';
+
+
 @ApiUseTags('Assets')
 @Controller('assets')
 export class AssetsController {
   constructor(
     private readonly assetsService: AssetsService,
+    private readonly configService: ConfigService,
   ) {}
 
   @Post('upload')
