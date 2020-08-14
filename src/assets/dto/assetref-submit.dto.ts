@@ -2,7 +2,6 @@ import { IsNotEmpty, MinLength, MaxLength, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class AssetrefSubmitDto {
-
   @ApiProperty({
     example: 'Name of my Asset',
     description: 'A verbose name for asset uploaded',
