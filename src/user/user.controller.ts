@@ -28,7 +28,7 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 export class UserController {
     constructor(
         private readonly userService: UserService,
-        ) {}
+    ) {}
 
     @Post()
     @HttpCode(HttpStatus.CREATED)
@@ -100,6 +100,7 @@ export class UserController {
     @ApiUnauthorizedResponse({ description: 'Not authorized.'})
     @ApiForbiddenResponse({description: 'Insufficient Rights.'})
     findAll() {
+        //TODO: reduce to UserPresentDTO
         return this.userService.findAll();
     }
 }
