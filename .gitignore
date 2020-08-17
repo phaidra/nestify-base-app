@@ -2,7 +2,7 @@
 /dist
 /node_modules
 /assets/uploads/files/*
-/assets/uploads/thumbnails/*
+/assets/uploads/thumbs/*
 
 # Logs
 logs
