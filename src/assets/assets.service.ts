@@ -12,9 +12,10 @@ export class AssetsService {
   ) {
   }
 
-
-  /*
-
+  /**
+   * creates an asset document for MD of submitted asset
+   * @param fileinfo
+   * @param AssetMD
    */
   async submitAsset(fileinfo, AssetMD: AssetrefSubmitDto): Promise<Assetref> {
     const assetdoc = {
@@ -29,8 +30,12 @@ export class AssetsService {
     const asset = new this.assetRefModel(assetdoc);
     return await asset.save();
   }
-  /*
 
+  /**
+   * middleware function creating a unique filename whilst preserving extension
+   * @param req
+   * @param file
+   * @param callback
    */
   static editFileName(req: any, file: any, callback: any) {
     //TODO: we might need some more sanitation here?
@@ -42,6 +47,7 @@ export class AssetsService {
       .join('');
     callback(null, `${name}-${randomName}${fileExtName}`);
   };
+
 
   async createThumb(fileinfo): Promise<any> {
     console.log(fileinfo);
