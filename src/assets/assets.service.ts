@@ -4,6 +4,7 @@ import { v4 } from 'uuid';
 import { Model } from 'mongoose';
 import path from 'path';
 import jimp from 'jimp/es';
+import pdf2pic from 'pdf2pic';
 
 import { ConfigService } from '@nestjs/config';
 import { Assetref } from './interfaces/assetref.interface';
@@ -51,7 +52,7 @@ export class AssetsService {
         return await this.makeImgThumb(fileinfo.filename, { width: 1500, height: 1500 }, 90, 'preview');
       case pdfRegex.test(fileinfo.mimetype):
         console.log('pdf');
-        return true;
+        return await this.makePDFThumb(fileinfo.filename, 1, { width: 1500, height: 1500 }, 90, 'preview');
     }
   }
 
@@ -75,6 +76,34 @@ export class AssetsService {
               });
             }
           }
+        })
+        .catch( err => {
+          reject(err);
+        });
+    });
+  }
+
+  /**
+   * creates a jpg thumbnail of this specified page of a PDF
+   * @param pdfname
+   * @param page
+   * @param dims
+   * @param qual
+   * @param thumbname
+   */
+  async makePDFThumb(pdfname: string, page: number, dims: Record<string, number>, qual: number, thumbname: string) {
+    return new Promise( (resolve, reject) => {
+      const pdf = new pdf2pic({
+        density: qual,
+        savename: `${pdfname.split('.')[0]}_${thumbname}`,
+        savedir: `${this.configService.get('assets.thumbs')}`,
+        format: "jpg",          // output file format
+        size: `${dims.width}x${dims.height}`         // output size in pixels
+      });
+
+      pdf.convert(`${this.configService.get('assets.dir')}/${pdfname}`)
+        .then(img => {
+          resolve(img);
         })
         .catch( err => {
           reject(err);

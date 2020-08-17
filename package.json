@@ -45,7 +45,8 @@
     "swagger-ui-express": "^4.1.4",
     "uuid": "^3.3.2",
     "validator": "^11.1.0",
-    "jimp": "^0.16.0"
+    "jimp": "^0.16.0",
+    "pdf2pic": "^1.4.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.4.1",
