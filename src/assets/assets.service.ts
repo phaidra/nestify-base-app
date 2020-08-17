@@ -35,24 +35,24 @@ export class AssetsService {
       mimetype: fileinfo.mimetype,
     }
     const asset = new this.assetRefModel(assetdoc);
-    await this.makeImgThumb(fileinfo.filename, {width: 1500, height: 1500}, 90, 'preview');
+    await this.createThumb(fileinfo);
     return await asset.save();
   }
 
   /**
-   * middleware function creating a unique filename whilst preserving extension
-   * @param req
-   * @param file
-   * @param callback
+   * tests for mimetype and creates thumbnail if possible
+   * @param fileinfo
    */
-  static editFileName(req: any, file: any, callback: any) {
-    const fileExtName = path.extname(file.originalname);
-    callback(null, `${v4()}${fileExtName}`);
-  };
-
-
   async createThumb(fileinfo): Promise<any> {
-    console.log(fileinfo);
+    const imgRegex = new RegExp('^image+/(jpg|jpeg|png|gif|bmp|tiff)');
+    const pdfRegex = new RegExp('^application+/(pdf)');
+    switch (true) {
+      case imgRegex.test(fileinfo.mimetype):
+        return await this.makeImgThumb(fileinfo.filename, { width: 1500, height: 1500 }, 90, 'preview');
+      case pdfRegex.test(fileinfo.mimetype):
+        console.log('pdf');
+        return true;
+    }
   }
 
   /**
@@ -81,4 +81,15 @@ export class AssetsService {
         });
     });
   }
+
+  /**
+   * middleware function creating a unique filename whilst preserving extension
+   * @param req
+   * @param file
+   * @param callback
+   */
+  static editFileName(req: any, file: any, callback: any) {
+    const fileExtName = path.extname(file.originalname);
+    callback(null, `${v4()}${fileExtName}`);
+  };
 }
