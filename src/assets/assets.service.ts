@@ -23,7 +23,7 @@ export class AssetsService {
    * @param fileinfo
    * @param AssetMD
    */
-  async submitAsset(fileinfo, AssetMD: AssetrefSubmitDto): Promise<Assetref> {
+  async submitAsset(fileinfo: Record<any, string>, AssetMD: AssetrefSubmitDto): Promise<Assetref> {
     console.log(fileinfo);
     const assetdoc = {
       name: AssetMD.name ? AssetMD.name:fileinfo.originalname,
@@ -55,24 +55,28 @@ export class AssetsService {
     console.log(fileinfo);
   }
 
-  async makeImgThumb(imgname, dims, qual, thumbname): Promise<any> {
+  /**
+   * creates a jpg thumbnail of an image in assets.thumbs, appends thumbname string
+   * @param imgname
+   * @param dims
+   * @param qual
+   * @param thumbname
+   */
+  async makeImgThumb(imgname: string, dims: Record<string, number>, qual: number, thumbname: string): Promise<any> {
     return new Promise( (resolve, reject) => {
-      console.log(`attempting to create image for ${imgname} in ${this.configService.get('assets.dir')}/${imgname.split('.')[0]}_${thumbname}.jpg`);
       jimp.read(`${this.configService.get('assets.dir')}/${imgname}`)
         .then( img => {
           if(img) {
-            if (dims && dims.height && dims.width) img.cover(dims.width, dims.height);
+            if (dims && dims.height && dims.width) img.scaleToFit(dims.width, dims.height);
             if (qual) img.quality(qual);
             if (imgname && (dims || qual)) {
               img.write(`${this.configService.get('assets.thumbs')}/${imgname.split('.')[0]}_${thumbname}.jpg`, () => {
-                console.log(`image created for ${imgname} in ${this.configService.get('assets.thumbs')}/${imgname.split('.')[0]}_${thumbname}.jpg`);
                 resolve(`${this.configService.get('assets.thumbs')}/${imgname.split('.')[0]}_${thumbname}.jpg`);
               });
             }
           }
         })
         .catch( err => {
-          console.log(`failed to read image ${this.configService.get('assets.dir')}/${imgname}`, err);
           reject(err);
         });
     });
