@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Assetref } from './interfaces/assetref.interface';
+import { v4 } from 'uuid';
 import { Model } from 'mongoose';
-import { AssetrefSubmitDto} from './dto/assetref-submit.dto';
 import path from 'path';
+import Jimp from 'jimp/es';
+
+import { Assetref } from './interfaces/assetref.interface';
+import { AssetrefSubmitDto} from './dto/assetref-submit.dto';
 
 @Injectable()
 export class AssetsService {
@@ -41,15 +44,34 @@ export class AssetsService {
     //TODO: we might need some more sanitation here?
     const name = file.originalname.split('.')[0];
     const fileExtName = path.extname(file.originalname);
-    const randomName = Array(4)
-      .fill(null)
-      .map(() => Math.round(Math.random() * 16).toString(16))
-      .join('');
-    callback(null, `${name}-${randomName}${fileExtName}`);
+    callback(null, `${name}-${v4()}${fileExtName}`);
   };
 
 
   async createThumb(fileinfo): Promise<any> {
     console.log(fileinfo);
   }
+
+/*  makeImgThumb(imgname, dims, qual, thumbname) {
+    return new Promise( function(resolve, reject){
+      console.log(`attempting to create image for ${imgname} in ${CONFIG.assets.thumbs}/${imgname.split('.')[0]}_${thumbname}.jpg`);
+      jimp.read(`${CONFIG.assets.dir}/${imgname}`)
+        .then( img => {
+          if(img) {
+            if (dims && dims.height && dims.width) img.cover(dims.width, dims.height);
+            if (qual) img.quality(qual);
+            if (imgname && (dims || qual)) {
+              img.write(`${CONFIG.assets.thumbs}/${imgname.split('.')[0]}_${thumbname}.jpg`, () => {
+                console.log(`image created for ${imgname} in ${CONFIG.assets.thumbs}/${imgname.split('.')[0]}_${thumbname}.jpg`);
+                resolve(`${CONFIG.assets.thumbs}/${imgname.split('.')[0]}_${thumbname}.jpg`);
+              });
+            }
+          }
+        })
+        .catch( err => {
+          console.log(`failed to read image ${CONFIG.assets.dir}/${imgname}`, err);
+          reject(err);
+        });
+    });
+  },*/
 }
