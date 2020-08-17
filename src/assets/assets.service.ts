@@ -51,8 +51,9 @@ export class AssetsService {
       case imgRegex.test(fileinfo.mimetype):
         return await this.makeImgThumb(fileinfo.filename, { width: 1500, height: 1500 }, 90, 'preview');
       case pdfRegex.test(fileinfo.mimetype):
-        console.log('pdf');
         return await this.makePDFThumb(fileinfo.filename, 1, { width: 1500, height: 1500 }, 90, 'preview');
+      default:
+        return new Promise((res) => res(true));
     }
   }
 
