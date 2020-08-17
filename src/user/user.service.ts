@@ -206,7 +206,13 @@ export class UserService {
     return user;
   }
 
-  private async checkPassword(attemptPass: string, user) {
+  /**
+   * compares entered to retrieved pwd, using bcrypt.compare
+   * @param attemptPass
+   * @param user
+   * @private
+   */
+  private async checkPassword(attemptPass: string, user: User) {
     const match = await bcrypt.compare(attemptPass, user.password);
     if (!match) {
       await this.passwordsDoNotMatch(user);

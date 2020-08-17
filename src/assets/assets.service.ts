@@ -12,6 +12,10 @@ export class AssetsService {
   ) {
   }
 
+
+  /*
+
+   */
   async submitAsset(fileinfo, AssetMD: AssetrefSubmitDto): Promise<Assetref> {
     const assetdoc = {
       name: AssetMD.name ? AssetMD.name:fileinfo.originalname,
@@ -25,7 +29,9 @@ export class AssetsService {
     const asset = new this.assetRefModel(assetdoc);
     return await asset.save();
   }
+  /*
 
+   */
   static editFileName(req: any, file: any, callback: any) {
     //TODO: we might need some more sanitation here?
     const name = file.originalname.split('.')[0];
