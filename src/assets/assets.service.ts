@@ -25,10 +25,9 @@ export class AssetsService {
    * @param AssetMD
    */
   async submitAsset(fileinfo: Record<any, string>, AssetMD: AssetrefSubmitDto): Promise<Assetref> {
-    console.log(fileinfo);
     const assetdoc = {
       name: AssetMD.name ? AssetMD.name:fileinfo.originalname,
-      identifier: AssetMD.identifier,
+      identifier: [AssetMD.identifier],
       source: AssetMD.source,
       originalname: fileinfo.originalname,
       path: fileinfo.filename,

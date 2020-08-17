@@ -8,7 +8,7 @@ export const AssetsSchema = new mongoose.Schema({
     required: [true, 'NAME_IS_BLANK'],
   },
   identifier: {
-    type: String,
+    type: Array,
   },
   source: {
     type: String,
