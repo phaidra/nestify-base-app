@@ -89,11 +89,12 @@ export class AuthService {
     try {
       jwtPayload = this.jwtService.verify(jwtPayload);
     } catch (err) {
-      return err;
+      res.status(401).json({error:'Failed to verify token payload.'});
+      return null;
     }
 
     if(!jwtPayload.userId) {
-      res.status(401).json(jwtPayload);
+      res.status(401).json({error:'UserID not found in token payload.'});
       return null;
     }
     const user = await this.userModel.findOne({ _id: jwtPayload.userId, verified: true });
