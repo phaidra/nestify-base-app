@@ -101,6 +101,8 @@ export class AuthService {
       res.status(401).json({error:'User not found.'});
       return null;
     }
+    req.body.__lastAccessedBy = JSON.parse(JSON.stringify(user.email));
+    req.body.__lastAccessedIn = Date.now();
     next();
     return user;
   }
