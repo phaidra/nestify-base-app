@@ -2,7 +2,7 @@ import * as mongoose from 'mongoose';
 
 export interface Label {
   label: string,
-  language: string
+  language: "de" | "en" | "fr" | "xx",
 }
 
 export interface Concept extends mongoose.Document {
@@ -20,4 +20,5 @@ export interface Concept extends mongoose.Document {
   editorialNote: string,
   changeNote: string,
   exactMatch: string
+  authRec: mongoose.Schema.Types.ObjectId,
 }
