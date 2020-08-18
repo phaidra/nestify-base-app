@@ -10,6 +10,7 @@ import { SchemasModule } from './schemas/schemas.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { AssetsModule } from './assets/assets.module';
+import { VocabModule } from './vocab/vocab.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { AssetsModule } from './assets/assets.module';
     UserModule,
     AuthModule,
     AssetsModule,
+    VocabModule,
   ],
   controllers: [AppController],
   providers: [AppService],
