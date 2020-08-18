@@ -2,6 +2,7 @@ import { HttpAdapterHost } from '@nestjs/core';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OpenAPIObject } from '@nestjs/swagger';
+import mongooseHistory from 'mongoose-history';
 import { ConverterService } from './converter.service';
 import { AuthService } from '../auth/auth.service';
 
@@ -28,6 +29,16 @@ export class SchemasService implements OnModuleInit {
   public names: string[] = [];
   public schemas: Record<string, any>[] = [];
   public models: Model<any>[] = [];
+  private history_options = {
+    metadata: [
+      {key: 'u', value: '__lastAccessedBy'},
+      {key: 'docid', value: function(original, newObject){
+          if(newObject._id) return newObject._id;
+          if(!newObject._id) return newObject.origid;
+        }},
+    ],
+    historyConnection: mongoose.connections[1],
+  };
 
   /**
    *
@@ -66,6 +77,7 @@ export class SchemasService implements OnModuleInit {
     for (let i = 0; i < jsonlist.length; i++) {
       const s = JSON.parse(fs.readFileSync(`${this.configService.get<string>('schemas.dir')}/${jsonlist[i]}`, 'utf8'));
       schemalist[i] = new mongoose.Schema(this.converterService.convert(s));
+      schemalist[i].plugin(mongooseHistory, this.history_options);
     }
     return schemalist;
   }
