@@ -167,6 +167,14 @@ export class SchemasService implements OnModuleInit {
     for (let i = 0; i < namelist.length; i++) {
       SchemasService.addMongooseAPISpec(swaggerDoc, namelist[i], schemalist[i]);
     }
+    swaggerDoc.components.schemas.error = {
+      type: 'object',
+      properties: {
+        error: {
+          type: 'string'
+        },
+      },
+    }
     return swaggerDoc;
   }
 
@@ -259,11 +267,19 @@ export class SchemasService implements OnModuleInit {
           }
         },
         'responses': {
-          200: {
+          201: {
             'description': `The created instance of ${name}`,
             'content':{
               'application/json': {
                 'schema': { '$ref': `#/components/schemas/${name}` },
+              },
+            },
+          },
+          401: {
+            'description': `Authorization failure.`,
+            'content':{
+              'application/json': {
+                'schema': { '$ref': `#/components/schemas/error` },
               },
             },
           },
@@ -282,6 +298,14 @@ export class SchemasService implements OnModuleInit {
         'responses': {
           200: {
             'description': `Emptied Collection ${name}`,
+          },
+          401: {
+            'description': `Authorization failure.`,
+            'content':{
+              'application/json': {
+                'schema': { '$ref': `#/components/schemas/error` },
+              },
+            },
           },
         },
         'tags': [
@@ -359,6 +383,14 @@ export class SchemasService implements OnModuleInit {
           404: {
             'description': `No document found with requested ID in collection ${name}`,
           },
+          401: {
+            'description': `Authorization failure.`,
+            'content':{
+              'application/json': {
+                'schema': { '$ref': `#/components/schemas/error` },
+              },
+            },
+          },
         },
         'tags': [
           `${name}`,
@@ -399,6 +431,14 @@ export class SchemasService implements OnModuleInit {
           404: {
             'description': `No document found with requested ID in collection ${name}`,
           },
+          401: {
+            'description': `Authorization failure.`,
+            'content':{
+              'application/json': {
+                'schema': { '$ref': `#/components/schemas/error` },
+              },
+            },
+          },
         },
         'tags': [
           `${name}`,
@@ -426,6 +466,14 @@ export class SchemasService implements OnModuleInit {
           },
           404: {
             'description': `No document found with requested ID in collection ${name}`,
+          },
+          401: {
+            'description': `Authorization failure.`,
+            'content':{
+              'application/json': {
+                'schema': { '$ref': `#/components/schemas/error` },
+              },
+            },
           },
         },
         'tags': [
