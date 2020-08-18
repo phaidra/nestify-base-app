@@ -135,7 +135,7 @@ export class SchemasService implements OnModuleInit {
     for (let i = 0; i < this.names.length; i++) {
       if (this.names[i]) a.push({
         type: this.names[i],
-        '@id': `${baseurl}/${this.names[i]}`,
+        '@id': `${baseurl}${this.names[i]}`,
         attributes: this.schemas[i].jsonSchema(),
         populateablePaths: this.getPopulateablePathsFromSchemaObject(this.schemas[i].jsonSchema(), []),
         reversePaths: Object.keys(this.schemas[i].virtuals).slice(0, Object.keys(this.schemas[i].virtuals).length - 1),
