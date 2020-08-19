@@ -221,12 +221,23 @@ export class UserService {
     return match;
   }
 
+  /**
+   * checks if a user block has been set and is  still valid
+   * @param user
+   * @private
+   */
   private static isUserBlocked(user) {
     if (user.blockExpires > Date.now()) {
       throw new ConflictException('User has been blocked try later.');
     }
   }
 
+  /**
+   * increases loginattempt counter and sets user block if max no of
+   * attempts is exceeded
+   * @param user
+   * @private
+   */
   private async passwordsDoNotMatch(user) {
     user.loginAttempts += 1;
     await user.save();
@@ -236,16 +247,32 @@ export class UserService {
     }
   }
 
+  /**
+   * sets user block to configured amount of hourse
+   * @param user
+   * @private
+   */
   private async blockUser(user) {
     user.blockExpires = addHours(new Date(), this.HOURS_TO_BLOCK);
     await user.save();
   }
 
+  /**
+   * sets back loginattempt counter to zero (in case of successfull login)
+   * @param user
+   * @private
+   */
   private static async passwordsAreMatch(user) {
     user.loginAttempts = 0;
     await user.save();
   }
 
+  /**
+   * creates & saves forgotPassword record incl verification token
+   * @param req
+   * @param createForgotPasswordDto
+   * @private
+   */
   private async saveForgotPassword(req: Request, createForgotPasswordDto: CreateForgotPasswordDto) {
     const forgotPassword = await this.forgotPasswordModel.create({
       email: createForgotPasswordDto.email,
@@ -258,6 +285,11 @@ export class UserService {
     await forgotPassword.save();
   }
 
+  /**
+   * retrieves forgotPassword record by verification token
+   * @param verifyUuidDto
+   * @private
+   */
   private async findForgotPasswordByUuid(verifyUuidDto: VerifyUuidDto): Promise<ForgotPassword> {
     const forgotPassword = await this.forgotPasswordModel.findOne({
       verification: verifyUuidDto.verification,
@@ -271,6 +303,13 @@ export class UserService {
     return forgotPassword;
   }
 
+  /**
+   * sets firstUsed flag and some client info upon successfull submission of the
+   * verification token
+   * @param req
+   * @param forgotPassword
+   * @private
+   */
   private async setForgotPasswordFirstUsed(req: Request, forgotPassword: ForgotPassword) {
     forgotPassword.firstUsed = true;
     forgotPassword.ipChanged = this.authService.getIp(req);
@@ -279,6 +318,11 @@ export class UserService {
     await forgotPassword.save();
   }
 
+  /**
+   * retrieves forgotPassword record by mail, firstUsed and finalUsed flag
+   * @param resetPasswordDto
+   * @private
+   */
   private async findForgotPasswordByEmail(resetPasswordDto: ResetPasswordDto): Promise<ForgotPassword> {
     const forgotPassword = await this.forgotPasswordModel.findOne({
       email: resetPasswordDto.email,
@@ -292,11 +336,22 @@ export class UserService {
     return forgotPassword;
   }
 
+  /**
+   * sets finalUsed flag in forgotPassword record upon password change
+   * @param forgotPassword
+   * @private
+   */
   private static async setForgotPasswordFinalUsed(forgotPassword: ForgotPassword) {
     forgotPassword.finalUsed = true;
     await forgotPassword.save();
   }
 
+  /**
+   * retrieves user record by mail and sets new password
+   * (bcrypt in schema pre-save function)
+   * @param resetPasswordDto
+   * @private
+   */
   private async resetUserPassword(resetPasswordDto: ResetPasswordDto) {
     const user = await this.userModel.findOne({
       email: resetPasswordDto.email,
