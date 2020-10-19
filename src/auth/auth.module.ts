@@ -17,7 +17,7 @@ import config from '../config';
       load: [config],
     }),
     MongooseModule.forFeature([
-      { name: 'User', schema: UserSchema },
+      { name: '_User', schema: UserSchema },
       { name: 'RefreshToken', schema: RefreshTokenSchema },
     ]),
     PassportModule,

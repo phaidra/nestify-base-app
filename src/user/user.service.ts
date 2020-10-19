@@ -23,7 +23,7 @@ export class UserService {
   LOGIN_ATTEMPTS_TO_BLOCK = parseInt(process.env.JWT_LOGIN_ATTEMPTS_TO_BLOCK, 10);
 
   constructor(
-    @InjectModel('User') private readonly userModel: Model<User>,
+    @InjectModel('_User') private readonly userModel: Model<User>,
     @InjectModel('ForgotPassword') private readonly forgotPasswordModel: Model<ForgotPassword>,
     private readonly authService: AuthService,
   ) {

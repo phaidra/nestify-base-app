@@ -17,7 +17,7 @@ export class AuthService {
   crypt: any;
 
   constructor(
-    @InjectModel('User') private readonly userModel: Model<User>,
+    @InjectModel('_User') private readonly userModel: Model<User>,
     @InjectModel('RefreshToken') private readonly refreshTokenModel: Model<RefreshToken>,
     private readonly jwtService: JwtService,
   ) {
