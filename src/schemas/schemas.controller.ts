@@ -23,7 +23,11 @@ export class SchemasController {
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({description: 'Basic API Information.'})
   apiroot(@Req() req: Request): Record<string, any> {
-    return this.schemasService.getResObject(`https://${req.header('Host')}${req.originalUrl}`);
+    return {
+      data: this.schemasService.getResObject(`https://${req.header('Host')}${req.originalUrl}`),
+      meta: {},
+      version: {},
+    }
   }
 
   @Get('/jsonschema/:name')
