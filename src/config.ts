@@ -36,7 +36,7 @@ export default () => ({
     'thumbs': './assets/uploads/thumbs',
     'IIIFDropZone': '',
   },
-  'version': '1',
+  'version': 1,
   'meta': {
     'title': 'Mongoose Nestify',
     'description': '',

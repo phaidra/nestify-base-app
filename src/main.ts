@@ -9,13 +9,13 @@ import { AssetsModule } from './assets/assets.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix(`api/v${process.env.API_VERSION}`);
+  app.setGlobalPrefix(`api/v${app.get('ConfigService').get('version')}`);
   app.enableCors(app.get('ConfigService').get('cors'));
 
   const options = new DocumentBuilder()
     .setTitle(app.get('ConfigService').get('meta.title'))
     .setDescription(app.get('ConfigService').get('meta.description'))
-    .setVersion(process.env.API_VERSION)
+    .setVersion(app.get('ConfigService').get('version'))
     .addBearerAuth({type: 'http', scheme: 'bearer', bearerFormat: 'JWT'}, 'bearer')
     .build();
   const document = SwaggerModule.createDocument(app, options, {
@@ -27,9 +27,9 @@ async function bootstrap() {
   });
 
   app.get('SchemasService').addSwaggerDefs(document);
-  SwaggerModule.setup(`api/v${process.env.API_VERSION}/swagger`, app, document);
+  SwaggerModule.setup(`api/v${app.get('ConfigService').get('version')}/swagger`, app, document);
 
-  await app.listen(process.env.APP_PORT).then(() => {
+  await app.listen(app.get('ConfigService').get('env.port')).then(() => {
     console.log('listening');
   });
 }
