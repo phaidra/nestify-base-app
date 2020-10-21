@@ -11,7 +11,7 @@ import { UserSchema } from '../user/schemas/user.schema';
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: 'User', schema: UserSchema },
+      { name: '_User', schema: UserSchema },
     ]),
     AuthModule],
   providers: [SchemasService, ConverterService],

@@ -19,11 +19,11 @@ import { User } from '../user/interfaces/user.interface';
 @Injectable()
 export class SchemasService implements OnModuleInit {
   constructor(
-    @InjectModel('User') private readonly userModel: Model<User>,
     private readonly configService: ConfigService,
     private readonly converterService: ConverterService,
     private readonly adapterHost: HttpAdapterHost,
     private readonly authService: AuthService,
+    @InjectModel('_User') private readonly userModel: Model<User>,
   ) {};
 
   public names: string[] = [];

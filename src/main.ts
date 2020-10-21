@@ -10,11 +10,7 @@ import { AssetsModule } from './assets/assets.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix(`api/v${process.env.API_VERSION}`);
-  app.enableCors({
-    origin: ['https://10.4.24.253:8080'],
-    credentials: true,
-    exposedHeaders: ['X-Total-Count'],
-  });
+  app.enableCors(app.get('ConfigService').get('cors'));
 
   const options = new DocumentBuilder()
     .setTitle(app.get('ConfigService').get('meta.title'))

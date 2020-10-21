@@ -16,8 +16,9 @@ export default () => ({
     else return `mongodb://${process.env.DATABASE_USER}:${process.env.DATABASE_PASSWORD}@${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}?authSource=${process.env.DATABASE_AUTHSOURCE}`;
   },*/
   'cors': {
-    'credentials': true,
-    'origin': process.env.APP_CORSORIGINS || '*',
+    origin: ['https://10.4.24.253:8080','https://vchc.univie.ac.at'],
+    credentials: true,
+    exposedHeaders: ['X-Total-Count'],
   },
   'auth': {
     'usercol': process.env.AUTH_USERCOL || '_user',
