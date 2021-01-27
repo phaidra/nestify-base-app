@@ -39,13 +39,31 @@ export class AssetsController {
     return await this.assetsService.submitAsset( asset, assetMD )
   }
 
-  @Get(':imgpath')
+  @Get('full/:imgpath')
   @HttpCode(HttpStatus.OK)
   @ApiParam({ name: 'imgpath', required: true })
   @ApiOkResponse({description: 'Data recieved'})
   @ApiNotFoundResponse({description: 'File not found'})
-  seeUploadedFile(@Param('imgpath') image, @Res() res) {
-    return res.sendFile(image, { root: './' });
+  returnOriginalFile(@Param('imgpath') image, @Res() res) {
+    return res.sendFile(image, { root: this.configService.get('assets.dir') });
+  }
+
+  @Get('thumb/:imgpath')
+  @HttpCode(HttpStatus.OK)
+  @ApiParam({ name: 'imgpath', required: true })
+  @ApiOkResponse({description: 'Data recieved'})
+  @ApiNotFoundResponse({description: 'File not found'})
+  returnThumbnail(@Param('imgpath') image, @Res() res) {
+    return res.sendFile(`${image.split('.')[0]}_thumb.jpg`, { root: this.configService.get('assets.thumbs') });
+  }
+
+  @Get('preview/:imgpath')
+  @HttpCode(HttpStatus.OK)
+  @ApiParam({ name: 'imgpath', required: true })
+  @ApiOkResponse({description: 'Data recieved'})
+  @ApiNotFoundResponse({description: 'File not found'})
+  returnPreview(@Param('imgpath') image, @Res() res) {
+    return res.sendFile(`${image.split('.')[0]}_preview.jpg`, { root: this.configService.get('assets.thumbs') });
   }
 
 }
