@@ -48,6 +48,7 @@ export class AssetsService {
     const pdfRegex = new RegExp('^application+/(pdf)');
     switch (true) {
       case imgRegex.test(fileinfo.mimetype):
+        this.makeImgThumb(fileinfo.filename, { width: 220, height: 220 }, 90, 'thumb');
         return await this.makeImgThumb(fileinfo.filename, { width: 1500, height: 1500 }, 90, 'preview');
       case pdfRegex.test(fileinfo.mimetype):
         return await this.makePDFThumb(fileinfo.filename, 1, { width: 1500, height: 1500 }, 90, 'preview');
