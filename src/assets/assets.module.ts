@@ -19,7 +19,7 @@ import { diskStorage } from 'multer';
       }),
       inject: [ConfigService],
     }),
-    MongooseModule.forFeature([{ name: 'Asset', schema: AssetsSchema }]),
+    MongooseModule.forFeature([{ name: 'Assetref', schema: AssetsSchema }]),
   ],
   controllers: [AssetsController],
   providers: [AssetsService, ConfigService]

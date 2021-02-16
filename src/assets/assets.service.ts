@@ -14,7 +14,7 @@ import { AssetrefSubmitDto} from './dto/assetref-submit.dto';
 export class AssetsService {
 
   constructor(
-    @InjectModel('Asset') private readonly assetRefModel: Model<Assetref>,
+    @InjectModel('Assetref') private readonly assetRefModel: Model<Assetref>,
     private readonly configService: ConfigService,
   ) {
   }
@@ -26,11 +26,10 @@ export class AssetsService {
    */
   async submitAsset(fileinfo: Record<any, string>, AssetMD: AssetrefSubmitDto): Promise<Assetref> {
     const assetdoc = {
-      name: AssetMD.name ? AssetMD.name:fileinfo.originalname,
+      name: fileinfo.filename,
       identifier: [AssetMD.identifier],
       source: AssetMD.source,
       originalname: fileinfo.originalname,
-      path: fileinfo.filename,
       size: fileinfo.size,
       mimetype: fileinfo.mimetype,
     }

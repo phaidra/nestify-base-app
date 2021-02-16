@@ -14,8 +14,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { AssetsService } from './assets.service';
 import { AssetrefSubmitDto} from './dto/assetref-submit.dto';
 
-@ApiTags('Assets')
-@Controller('assets')
+@ApiTags('Assetrefs')
+@Controller('assetrefs')
 export class AssetsController {
   constructor(
     private readonly assetsService: AssetsService,

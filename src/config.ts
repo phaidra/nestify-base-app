@@ -16,7 +16,7 @@ export default () => ({
     else return `mongodb://${process.env.DATABASE_USER}:${process.env.DATABASE_PASSWORD}@${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}?authSource=${process.env.DATABASE_AUTHSOURCE}`;
   },*/
   'cors': {
-    origin: ['https://10.4.24.253:8080','https://vchc.univie.ac.at'],
+    origin: ['https://10.4.24.253:8080','https://vchc.univie.ac.at', 'https://192.168.0.45:8080'],
     credentials: true,
     exposedHeaders: ['X-Total-Count'],
   },
@@ -32,8 +32,8 @@ export default () => ({
     'importcol': 'import',
   },
   'assets': {
-    'dir': './assets/uploads/files',
-    'thumbs': './assets/uploads/thumbs',
+    'dir': '\\\\w07ds2\\ACDH_Adlib_Kgunivie_Images$\\uploads\\files',
+    'thumbs': '\\\\w07ds2\\ACDH_Adlib_Kgunivie_Images$\\uploads\\thumbs',
     'IIIFDropZone': '',
   },
   'version': 1,

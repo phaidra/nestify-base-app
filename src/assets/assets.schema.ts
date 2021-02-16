@@ -16,9 +16,6 @@ export const AssetsSchema = new mongoose.Schema({
   originalname: {
     type: String,
   },
-  path: {
-    type: String,
-  },
   size: {
     type: Number
   },
