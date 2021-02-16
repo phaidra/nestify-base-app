@@ -37,4 +37,19 @@ export class SchemasController {
   jsonSchemaByName(@Param('name') name: string): Record<string, any> {
     return this.schemasService.jsonSchemaByName(name);
   }
+
+  @Get('/search/:name/:query/:operator/:limit/:skip/:sort')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({description: 'JSON Schema representation of requested entity.'})
+  @ApiNotFoundResponse({description: 'Schema not defined.'})
+  search(
+    @Param('name') name: string,
+    @Param('query') query: string,
+    @Param('operator') operator: string,
+    @Param('limit') limit: string,
+    @Param('skip') skip: string,
+    @Param('sort') sort: string,
+  ): Record<string, any> {
+    return this.schemasService.ftsearch(name, query, operator, limit, skip, sort);
+  }
 }

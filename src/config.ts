@@ -27,6 +27,24 @@ export default () => ({
   'schemas': {
     'dir': './jsonschemas',
   },
+  'ftsearch': {
+     'entry': [
+       { path: 'name'},
+       { path: 'transscription'},
+       { path: 'creator.id', target: 'actor' },
+       { path: 'material', target: 'descriptor' },
+       { path: 'technique', target: 'descriptor' },
+       { path: 'classification.descriptor', target: 'descriptor' },
+     ],
+    'collect': [
+      { path: 'name'},
+      { path: 'creator.id', target: 'actor' },
+      { path: 'place', target: 'descriptor' },
+      { path: 'time', target: 'descriptor' },
+      { path: 'classification.descriptor', target: 'descriptor' },
+      { path: 'description', target: 'descriptor'}
+    ]
+  },
   'import': {
     'dir': './import',
     'importcol': 'import',

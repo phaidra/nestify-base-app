@@ -21,7 +21,7 @@ export class AssetsService {
   }
 
   /**
-   * creates an asset document for MD of submitted asset
+   * creates an asset document for MD of a submitted asset, attempts to create a corresponding thumbnail
    * @param fileinfo
    * @param AssetMD
    */

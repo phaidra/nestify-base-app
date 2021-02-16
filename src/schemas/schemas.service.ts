@@ -26,6 +26,7 @@ export class SchemasService implements OnModuleInit {
     @InjectModel('_User') private readonly userModel: Model<User>,
   ) {};
 
+  public json: Record<string, any>[] = [];
   public names: string[] = [];
   public schemas: Record<string, any>[] = [];
   public models: Model<any>[] = [];
@@ -76,6 +77,7 @@ export class SchemasService implements OnModuleInit {
     const schemalist: Schema<any>[] = [];
     for (let i = 0; i < jsonlist.length; i++) {
       const s = JSON.parse(fs.readFileSync(`${this.configService.get<string>('schemas.dir')}/${jsonlist[i]}`, 'utf8'));
+      this.json[i] = s;
       schemalist[i] = new mongoose.Schema(this.converterService.convert(s));
       schemalist[i].plugin(mongooseHistory, this.history_options);
     }
@@ -118,9 +120,9 @@ export class SchemasService implements OnModuleInit {
   private restifyModels(host: HttpAdapterHost) {
     for (let i = 0; i < this.names.length; i++) {
       restify.serve(host.httpAdapter, this.models[i], {
-        preCreate: this.authService.validateUserExternal,
-        preUpdate: this.authService.validateUserExternal,
-        preDelete: this.authService.validateUserExternal,
+        preCreate: [this.authService.validateUserExternal],
+        preUpdate: [this.authService.validateUserExternal],
+        preDelete: [this.authService.validateUserExternal],
         totalCountHeader: true,
       });
     }
@@ -156,6 +158,94 @@ export class SchemasService implements OnModuleInit {
     }
     return false;
   };
+
+  public async ftsearch(name: string, query: string, operator: string, limit: string, skip: string, sort: string) {
+    const q = query.match(/(".*?"|[^"\s]+)(?=\s*|\s*$)/g);
+    const m = this.models[this.names.indexOf(name)]
+    let aggregation = this.createFTAggregation(name);
+    const match = [];
+    let matchobject = { $match: {} }
+    q.forEach(t => {
+      match.push({
+        ftindex: { "$regex": new RegExp(t.replace(/['"]+/g, ''), 'i')}
+      });
+    });
+    if(operator == '$or' || operator == '$and') matchobject['$match'][operator] = match;
+    else matchobject['$match']['$or'] = match;
+    aggregation = aggregation.concat([
+      matchobject,
+      {
+        $sort: JSON.parse(sort) || { name: 1 }
+      },
+      {
+        $skip: parseInt(skip,10) || 0
+      },
+      {
+        $limit: parseInt(limit,10) || 40
+      }
+    ]);
+    return await m.aggregate(aggregation);
+  };
+
+  private createFTAggregation(name: string) {
+    let paths = this.configService.get(`ftsearch.${name}`);
+    if (!Array.isArray(paths)) paths = this.getPopulateablePathsFromSchemaObject(this.schemas[this.names.indexOf(name)].jsonSchema(), []);
+    const aggregation = [];
+    paths.forEach(path => {
+      if(path.path && path.target) {
+        aggregation.push({
+          '$lookup': {
+            'from': `${path.target}s`,
+            'localField': path.path,
+            'foreignField': '_id',
+            'as': path.path.split('.').join('')
+          }
+        });
+      }
+    });
+    aggregation.push({
+      $set: {
+        ftindex: ""
+      }
+    });
+    paths.forEach(path => {
+      if(path.path && path.target) {
+        aggregation.push({
+          '$set': {
+            'ftindex': {
+              '$reduce': {
+                'input': `$${path.path.split('.').join('')}`,
+                'initialValue': '$ftindex',
+                'in': {
+                  '$concat': [
+                    '$$value', ' ', '$$this.name'
+                  ]
+                }
+              }
+            }
+          }
+        });
+      }
+      else if(path.path) {
+        aggregation.push({
+          '$set': {
+            'ftindex': {
+              '$reduce': {
+                'input': [`$${path.path}`],
+                'initialValue': '$ftindex',
+                'in': {
+                  '$concat': [
+                    '$$value', ' ', '$$this'
+                  ]
+                }
+              }
+            }
+          }
+        });
+      }
+    });
+    return aggregation;
+  }
 
   /**
    *
@@ -548,5 +638,4 @@ export class SchemasService implements OnModuleInit {
     }
     return p;
   };
-
 }
