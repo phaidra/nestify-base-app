@@ -4,7 +4,8 @@ import { v4 } from 'uuid';
 import { Model } from 'mongoose';
 import path from 'path';
 import jimp from 'jimp/es';
-import pdf2pic from 'pdf2pic';
+import { fromPath } from "pdf2pic";
+import { renameSync } from "fs";
 
 import { ConfigService } from '@nestjs/config';
 import { Assetref } from './interfaces/assetref.interface';
@@ -50,6 +51,7 @@ export class AssetsService {
         this.makeImgThumb(fileinfo.filename, { width: 220, height: 220 }, 90, 'thumb');
         return await this.makeImgThumb(fileinfo.filename, { width: 1500, height: 1500 }, 90, 'preview');
       case pdfRegex.test(fileinfo.mimetype):
+        this.makePDFThumb(fileinfo.filename, 1, { width: 220, height: 220 }, 90, 'thumb');
         return await this.makePDFThumb(fileinfo.filename, 1, { width: 1500, height: 1500 }, 90, 'preview');
       default:
         return new Promise((res) => res(true));
@@ -93,16 +95,24 @@ export class AssetsService {
    */
   async makePDFThumb(pdfname: string, page: number, dims: Record<string, number>, qual: number, thumbname: string) {
     return new Promise( (resolve, reject) => {
-      const pdf = new pdf2pic({
+      const options = {
         density: qual,
-        savename: `${pdfname.split('.')[0]}_${thumbname}`,
-        savedir: `${this.configService.get('assets.thumbs')}`,
-        format: "jpg",          // output file format
-        size: `${dims.width}x${dims.height}`         // output size in pixels
-      });
+        saveFilename: `${pdfname.split('.')[0]}_${thumbname}`,
+        savePath: `${this.configService.get('assets.thumbs')}`,
+        format: "jpg",
+        width: dims.width,
+        height: dims.height,
+      };
 
-      pdf.convert(`${this.configService.get('assets.dir')}/${pdfname}`)
+      const PDFasImage = fromPath(`${this.configService.get('assets.dir')}/${pdfname}`, options);
+      PDFasImage(page, false)
         .then(img => {
+          // need to remove the automatically appended page number from the file name
+          // to have them smoothly named for the frontend
+          const cimg = JSON.parse(JSON.stringify(img));
+          const newpath = cimg.path.split('.');
+          newpath.splice('-2');
+          renameSync(cimg.path, `${newpath.join('.')}.jpg`);
           resolve(img);
         })
         .catch( err => {
