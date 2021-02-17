@@ -174,11 +174,16 @@ export class SchemasService implements OnModuleInit {
     if(operator == '$or' || operator == '$and') matchobject['$match'][operator] = match;
     else matchobject['$match']['$or'] = match;
     if(sort.split('')[0] == "-") sortobject[sort.substr(1)] = -1;
-    else sortobject[sort.substr(1)] = 1;
+    else sortobject[sort] = 1;
     aggregation = aggregation.concat([
       matchobject,
+      { $sort: sortobject },
       {
         $facet: {
+          data: [
+            { $skip: parseInt(skip, 10) || 0 },
+            { $limit: parseInt(limit, 10) || 40 },
+          ],
           metadata: [
             {
               $group: {
@@ -187,11 +192,6 @@ export class SchemasService implements OnModuleInit {
               }
             },
           ],
-          data: [
-            { $sort: sortobject },
-            { $skip: parseInt(skip, 10) || 0 },
-            { $limit: parseInt(limit, 10) || 40 },
-          ]
         }
       },
       { $project: {

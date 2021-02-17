@@ -51,7 +51,7 @@ export class SchemasController {
     @Query('sort') sort: string,
     @Response() res,
   ) {
-    let results = await this.schemasService.ftsearch(type, query, operator, limit, skip, sort);
+    const results = await this.schemasService.ftsearch(type, query, operator, limit, skip, sort);
     return res.set({'X-Total-Count': results[0].total }).json(results[0].data);
   }
 }
