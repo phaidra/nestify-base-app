@@ -165,6 +165,7 @@ export class SchemasService implements OnModuleInit {
     let aggregation = this.createFTAggregation(name);
     const match = [];
     let matchobject = { $match: {} }
+    let sortobject = {}
     q.forEach(t => {
       match.push({
         ftindex: { "$regex": new RegExp(t.replace(/['"]+/g, ''), 'i')}
@@ -172,20 +173,37 @@ export class SchemasService implements OnModuleInit {
     });
     if(operator == '$or' || operator == '$and') matchobject['$match'][operator] = match;
     else matchobject['$match']['$or'] = match;
+    if(sort.split('')[0] == "-") sortobject[sort.substr(1)] = -1;
+    else sortobject[sort.substr(1)] = 1;
     aggregation = aggregation.concat([
       matchobject,
       {
-        $sort: JSON.parse(sort) || { name: 1 }
+        $facet: {
+          metadata: [
+            {
+              $group: {
+                _id: null,
+                total: { $sum: 1 }
+              }
+            },
+          ],
+          data: [
+            { $sort: sortobject },
+            { $skip: parseInt(skip, 10) || 0 },
+            { $limit: parseInt(limit, 10) || 40 },
+          ]
+        }
       },
-      {
-        $skip: parseInt(skip,10) || 0
-      },
-      {
-        $limit: parseInt(limit,10) || 40
+      { $project: {
+          data: 1,
+          // Get total from the first element of the metadata array
+          total: { $arrayElemAt: [ '$metadata.total', 0 ] }
+        }
       }
     ]);
-    return await m.aggregate(aggregation);
+    return  await m.aggregate(aggregation);
   };
+
 
   private createFTAggregation(name: string) {
     let paths = this.configService.get(`ftsearch.${name}`);

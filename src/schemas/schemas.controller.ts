@@ -3,7 +3,7 @@ import {
   Get,
   Req,
   HttpStatus,
-  Param, HttpCode,
+  Param, HttpCode, Query, Response
 } from '@nestjs/common';
 import { Request } from 'express';
 import { SchemasService } from './schemas.service';
@@ -38,18 +38,20 @@ export class SchemasController {
     return this.schemasService.jsonSchemaByName(name);
   }
 
-  @Get('/search/:name/:query/:operator/:limit/:skip/:sort')
+  @Get('/search/:type/:query')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({description: 'JSON Schema representation of requested entity.'})
-  @ApiNotFoundResponse({description: 'Schema not defined.'})
-  search(
-    @Param('name') name: string,
+  @ApiOkResponse({description: 'An Array of the requested Entities.'})
+  @ApiNotFoundResponse({description: 'Nothing Found.'})
+  async search(
+    @Param('type') type: string,
     @Param('query') query: string,
-    @Param('operator') operator: string,
-    @Param('limit') limit: string,
-    @Param('skip') skip: string,
-    @Param('sort') sort: string,
-  ): Record<string, any> {
-    return this.schemasService.ftsearch(name, query, operator, limit, skip, sort);
+    @Query('operator') operator: string,
+    @Query('limit') limit: string,
+    @Query('skip') skip: string,
+    @Query('sort') sort: string,
+    @Response() res,
+  ) {
+    let results = await this.schemasService.ftsearch(type, query, operator, limit, skip, sort);
+    return res.set({'X-Total-Count': results[0].total }).json(results[0].data);
   }
 }
