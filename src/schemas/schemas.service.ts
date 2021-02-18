@@ -196,12 +196,11 @@ export class SchemasService implements OnModuleInit {
       },
       { $project: {
           data: 1,
-          // Get total from the first element of the metadata array
           total: { $arrayElemAt: [ '$metadata.total', 0 ] }
         }
       }
     ]);
-    return  await m.aggregate(aggregation);
+    return  await m.aggregate(aggregation).option({ allowDiskUse: true });
   };
 
 
