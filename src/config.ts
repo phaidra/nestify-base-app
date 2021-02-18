@@ -9,7 +9,7 @@ export default () => ({
     'pwd':process.env.DATABASE_PASSWORD,
     'auth':process.env.DATABASE_AUTHSOURCE
   },
-  'mongourl': `mongodb://${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}`,
+  'mongourl': `mongodb://${process.env.DATABASE_USER}:${process.env.DATABASE_PASSWORD}@${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}?authSource=${process.env.DATABASE_AUTHSOURCE}`,
 /*    () => {
     console.log(process.env.DATABASE_USER, `mongodb://${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}`);
     if(process.env.DATABASE_USER == 'none') return `mongodb://${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}`;
