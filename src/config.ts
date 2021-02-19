@@ -2,6 +2,13 @@ export default () => ({
   'env': {
     'port': parseInt(process.env.APP_PORT, 10) || 3000,
   },
+  'assets': {
+    'dir': process.env.ASSETS_DIR,
+    'thumbs': process.env.ASSETS_THUMBS,
+  },
+  'schemas': {
+    'dir': process.env.SCHEMAS_DIR,
+  },
   'db': {
     'host':process.env.DATABASE_HOST,
     'db':process.env.DATABASE_NAME,
@@ -12,15 +19,11 @@ export default () => ({
   'mongourl': `mongodb://${process.env.DATABASE_USER}${process.env.DATABASE_USER ? ':' : ''}${process.env.DATABASE_PASSWORD}${process.env.DATABASE_USER ? '@' : ''}${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}${process.env.DATABASE_AUTHSOURCE ? '?authSource=' : ""}${process.env.DATABASE_AUTHSOURCE}`,
   'cors': {
     origin: JSON.parse(process.env.CORS_ORIGINS),
-    credentials: true,
-    exposedHeaders: ['X-Total-Count'],
+    exposedHeaders: JSON.parse(process.env.CORS_HEADERS),
   },
   'auth': {
     'usercol': process.env.AUTH_USERCOL || '_user',
     'secret': process.env.AUTH_SECRET || 'secret',
-  },
-  'schemas': {
-    'dir': './jsonschemas',
   },
   'ftsearch': {
      'entry': [
@@ -39,15 +42,6 @@ export default () => ({
       { path: 'classification.descriptor', target: 'descriptor' },
       { path: 'description', target: 'descriptor'}
     ]
-  },
-  'import': {
-    'dir': './import',
-    'importcol': 'import',
-  },
-  'assets': {
-    'dir': '\\\\w07ds2\\ACDH_Adlib_Kgunivie_Images$\\uploads\\files',
-    'thumbs': '\\\\w07ds2\\ACDH_Adlib_Kgunivie_Images$\\uploads\\thumbs',
-    'IIIFDropZone': '',
   },
   'version': 1,
   'meta': {
