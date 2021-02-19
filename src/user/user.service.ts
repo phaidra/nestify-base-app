@@ -283,14 +283,21 @@ export class UserService {
       browserRequest: this.authService.getBrowserInfo(req),
       countryRequest: this.authService.getCountry(req),
     });
-    await forgotPassword.save(null,(err,doc) => this.sendForgotPasswordMail(doc));
+    forgotPassword.save(null,(err,doc) => {
+      UserService.sendForgotPasswordMail(doc).then((mail) => {
+        console.log("reset link sent", mail);
+      })
+      .catch((err) => {
+        console.log('sent mail failed', err);
+      });
+    });
   }
 
-  private async sendForgotPasswordMail(forgotPasswordDoc: ForgotPassword) {
-    let transporter = nodemailer.createTransport({
+  private static async sendForgotPasswordMail(forgotPasswordDoc: ForgotPassword) {
+    const transporter = nodemailer.createTransport({
       host: process.env.MAIL_HOST,
       port: process.env.MAIL_PORT,
-      secure: (process.env.MAIL_PORT == "465") ? true : false,
+      secure: (process.env.MAIL_PORT == "465"),
       auth: process.env.MAIL_USER ? {
         user: process.env.MAIL_USER, // generated ethereal user
         pass: process.env.MAIL_PASS, // generated ethereal password
