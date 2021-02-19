@@ -9,13 +9,6 @@ export default () => ({
   'schemas': {
     'dir': process.env.SCHEMAS_DIR,
   },
-  'db': {
-    'host':process.env.DATABASE_HOST,
-    'db':process.env.DATABASE_NAME,
-    'user':process.env.DATABASE_USER,
-    'pwd':process.env.DATABASE_PASSWORD,
-    'auth':process.env.DATABASE_AUTHSOURCE
-  },
   'mongourl': `mongodb://${process.env.DATABASE_USER}${process.env.DATABASE_USER ? ':' : ''}${process.env.DATABASE_PASSWORD}${process.env.DATABASE_USER ? '@' : ''}${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}${process.env.DATABASE_AUTHSOURCE ? '?authSource=' : ""}${process.env.DATABASE_AUTHSOURCE}`,
   'cors': {
     origin: JSON.parse(process.env.CORS_ORIGINS),
