@@ -9,14 +9,9 @@ export default () => ({
     'pwd':process.env.DATABASE_PASSWORD,
     'auth':process.env.DATABASE_AUTHSOURCE
   },
-  'mongourl': `mongodb://${process.env.DATABASE_USER}:${process.env.DATABASE_PASSWORD}@${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}?authSource=${process.env.DATABASE_AUTHSOURCE}`,
-/*    () => {
-    console.log(process.env.DATABASE_USER, `mongodb://${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}`);
-    if(process.env.DATABASE_USER == 'none') return `mongodb://${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}`;
-    else return `mongodb://${process.env.DATABASE_USER}:${process.env.DATABASE_PASSWORD}@${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}?authSource=${process.env.DATABASE_AUTHSOURCE}`;
-  },*/
+  'mongourl': `mongodb://${process.env.DATABASE_USER}${process.env.DATABASE_USER ? ':' : ''}${process.env.DATABASE_PASSWORD}${process.env.DATABASE_USER ? '@' : ''}${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}${process.env.DATABASE_AUTHSOURCE ? '?authSource=' : ""}${process.env.DATABASE_AUTHSOURCE}`,
   'cors': {
-    origin: ['https://10.4.24.253:8080','https://vchc.univie.ac.at', 'https://192.168.0.45:8080'],
+    origin: JSON.parse(process.env.CORS_ORIGINS),
     credentials: true,
     exposedHeaders: ['X-Total-Count'],
   },
