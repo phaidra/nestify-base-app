@@ -14,6 +14,7 @@ import { VerifyUuidDto } from './dto/verify-uuid.dto';
 import { RefreshAccessTokenDto } from './dto/refresh-access-token.dto';
 import { ForgotPassword } from './interfaces/forgot-password.interface';
 import { User } from './interfaces/user.interface';
+import nodemailer from 'nodemailer';
 
 @Injectable()
 export class UserService {
@@ -282,7 +283,26 @@ export class UserService {
       browserRequest: this.authService.getBrowserInfo(req),
       countryRequest: this.authService.getCountry(req),
     });
-    await forgotPassword.save();
+    await forgotPassword.save(null,(err,doc) => this.sendForgotPasswordMail(doc));
+  }
+
+  private async sendForgotPasswordMail(forgotPasswordDoc: ForgotPassword) {
+    let transporter = nodemailer.createTransport({
+      host: process.env.MAIL_HOST,
+      port: process.env.MAIL_PORT,
+      secure: (process.env.MAIL_PORT == "465") ? true : false,
+      auth: process.env.MAIL_USER ? {
+        user: process.env.MAIL_USER, // generated ethereal user
+        pass: process.env.MAIL_PASS, // generated ethereal password
+      } : null,
+    });
+    return await transporter.sendMail({
+      from: `"${process.env.MAIL_FROM_NAME}" <${process.env.MAIL_FROM_ADRESS}>`,
+      to: forgotPasswordDoc.email,
+      subject: "Password Reset Verification Link",
+      text: `Please go to https://vchc.univie.ac.at/db/#/en/u/resetpassword/${forgotPasswordDoc.verification} to reset your password.`,
+      html: `Please go to <a href="https://vchc.univie.ac.at/db/#/en/u/resetpassword/${forgotPasswordDoc.verification}">this link</a> to reset your password.`,
+    });
   }
 
   /**
