@@ -307,8 +307,8 @@ export class UserService {
       from: `"${process.env.MAIL_FROM_NAME}" <${process.env.MAIL_FROM_ADRESS}>`,
       to: forgotPasswordDoc.email,
       subject: "Password Reset Verification Link",
-      text: `Please go to https://vchc.univie.ac.at/db/#/en/u/resetpassword/${forgotPasswordDoc.verification} to reset your password.`,
-      html: `Please go to <a href="https://vchc.univie.ac.at/db/#/en/u/resetpassword/${forgotPasswordDoc.verification}">this link</a> to reset your password.`,
+      text: `Please go to https://vchc.univie.ac.at/dbneu/#/en/u/resetpassword/${forgotPasswordDoc.verification} to reset your password.`,
+      html: `Please go to <a href="https://vchc.univie.ac.at/dbneu/#/en/u/resetpassword/${forgotPasswordDoc.verification}">this link</a> to reset your password.`,
     });
   }
 

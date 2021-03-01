@@ -11,8 +11,8 @@ export default () => ({
   },
   'mongourl': `mongodb://${process.env.DATABASE_USER}${process.env.DATABASE_USER ? ':' : ''}${process.env.DATABASE_PASSWORD}${process.env.DATABASE_USER ? '@' : ''}${process.env.DATABASE_HOST}/${process.env.DATABASE_NAME}${process.env.DATABASE_AUTHSOURCE ? '?authSource=' : ""}${process.env.DATABASE_AUTHSOURCE}`,
   'cors': {
-    origin: JSON.parse(process.env.CORS_ORIGINS),
-    exposedHeaders: JSON.parse(process.env.CORS_HEADERS),
+    'origin': JSON.parse(process.env.CORS_ORIGINS),
+    'exposedHeaders': JSON.parse(process.env.CORS_HEADERS),
   },
   'auth': {
     'usercol': process.env.AUTH_USERCOL || '_user',
