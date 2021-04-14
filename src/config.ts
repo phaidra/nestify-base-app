@@ -20,7 +20,8 @@ export default () => ({
   },
   'ftsearch': {
      'entry': [
-       { path: 'name'},
+       { path: 'name' },
+       { path: 'originalTitle' },
        { path: 'transscription'},
        { path: 'creator.id', target: 'actor' },
        { path: 'material', target: 'descriptor' },
