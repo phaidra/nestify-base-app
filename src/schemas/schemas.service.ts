@@ -164,8 +164,8 @@ export class SchemasService implements OnModuleInit {
     const m = this.models[this.names.indexOf(name)]
     let aggregation = this.createFTAggregation(name);
     const match = [];
-    let matchobject = { $match: {} }
-    let sortobject = {}
+    const matchobject = { $match: {} }
+    const sortobject = {}
     q.forEach(t => {
       match.push({
         ftindex: { "$regex": new RegExp(t.replace(/['"]+/g, ''), 'i')}
