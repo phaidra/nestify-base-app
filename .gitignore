@@ -38,4 +38,5 @@ lerna-debug.log*
 # app specific folders
 /jsonschemas
 /assets
+/db_migrations
 dev.env
