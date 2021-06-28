@@ -264,6 +264,15 @@ export class SchemasService implements OnModuleInit {
     return aggregation;
   }
 
+  /**
+   * used in presave hooks to create/update the full text normalisation field
+   * TODO: paths should come from configservice, wich is currently not available in
+   * presave hooks
+   * @param req
+   * @param res
+   * @param next
+   * @private
+   */
   private createFtiField(req: Request, res: Response, next: NextFunction) {
     const paths = [
       { path: 'name' },
