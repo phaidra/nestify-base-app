@@ -26,6 +26,7 @@ export default () => ({
        { path: 'creator.id', target: 'actor' },
        { path: 'material', target: 'descriptor' },
        { path: 'technique', target: 'descriptor' },
+       { path: 'partOf', target: 'collect' },
        { path: 'classification.descriptor', target: 'descriptor' },
      ],
     'collect': [

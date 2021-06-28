@@ -15,6 +15,7 @@ import * as fs from 'fs';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Schema, Connection } from "mongoose";
 import { User } from '../user/interfaces/user.interface';
+import { NextFunction, Request, Response } from 'express';
 
 @Injectable()
 export class SchemasService implements OnModuleInit {
@@ -120,8 +121,8 @@ export class SchemasService implements OnModuleInit {
   private restifyModels(host: HttpAdapterHost) {
     for (let i = 0; i < this.names.length; i++) {
       restify.serve(host.httpAdapter, this.models[i], {
-        preCreate: [this.authService.validateUserExternal],
-        preUpdate: [this.authService.validateUserExternal],
+        preCreate: [this.authService.validateUserExternal, this.createFtiField],
+        preUpdate: [this.authService.validateUserExternal, this.createFtiField],
         preDelete: [this.authService.validateUserExternal],
         totalCountHeader: true,
       });
@@ -203,7 +204,6 @@ export class SchemasService implements OnModuleInit {
     return  await m.aggregate(aggregation).option({ allowDiskUse: true });
   };
 
-
   private createFTAggregation(name: string) {
     let paths = this.configService.get(`ftsearch.${name}`);
     if (!Array.isArray(paths)) paths = this.getPopulateablePathsFromSchemaObject(this.schemas[this.names.indexOf(name)].jsonSchema(), []);
@@ -262,6 +262,37 @@ export class SchemasService implements OnModuleInit {
       }
     });
     return aggregation;
+  }
+
+  private createFtiField(req: Request, res: Response, next: NextFunction) {
+    const paths = [
+      { path: 'name' },
+      { path: 'originalTitle' },
+      { path: 'transscription'},
+      { path: 'creator.id', target: 'actor' },
+      { path: 'material', target: 'descriptor' },
+      { path: 'technique', target: 'descriptor' },
+      { path: 'partOf', target: 'collect' },
+      { path: 'classification.descriptor', target: 'descriptor' },
+    ];
+    const aggregation = [];
+    paths.forEach(path => {
+      if(path.path && path.target) {
+        if(path.path.split('.').length > 1) {
+          aggregation.push(req.body[path.path.split('.')[0]].reduce(function (a, c) {
+            return `${a} ${c[path.path.split('.')[1]].name}`
+          }, ''));
+        }
+        else _.get(req.body, `${path.path}.name`);
+      }
+      else if(path.path) {
+        aggregation.push(
+          _.get(req.body, path.path)
+        );
+      }
+    });
+    req.body.fti = aggregation.join(' ');
+    next();
   }
 
   /**
