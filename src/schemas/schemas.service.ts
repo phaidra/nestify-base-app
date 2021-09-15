@@ -17,6 +17,27 @@ import { Model, Schema, Connection } from "mongoose";
 import { User } from '../user/interfaces/user.interface';
 import { NextFunction, Request, Response } from 'express';
 
+const ftiConfig = {
+  'entry': [
+    { path: 'name' },
+    { path: 'originalTitle' },
+    { path: 'transscription'},
+    { path: 'creator.id', target: 'actor' },
+    { path: 'material', target: 'descriptor' },
+    { path: 'technique', target: 'descriptor' },
+    { path: 'partOf', target: 'collect' },
+    { path: 'classification.descriptor', target: 'descriptor' },
+  ],
+  'collect': [
+    { path: 'name'},
+    { path: 'creator.id', target: 'actor' },
+    { path: 'place', target: 'descriptor' },
+    { path: 'time', target: 'descriptor' },
+    { path: 'classification.descriptor', target: 'descriptor' },
+    { path: 'description', target: 'descriptor'}
+  ]
+}
+
 @Injectable()
 export class SchemasService implements OnModuleInit {
   constructor(
@@ -79,7 +100,7 @@ export class SchemasService implements OnModuleInit {
     for (let i = 0; i < jsonlist.length; i++) {
       const s = JSON.parse(fs.readFileSync(`${this.configService.get<string>('schemas.dir')}/${jsonlist[i]}`, 'utf8'));
       this.json[i] = s;
-      schemalist[i] = new mongoose.Schema(this.converterService.convert(s));
+      schemalist[i] = new mongoose.Schema(this.converterService.convert(s), { versionKey: false });
       schemalist[i].plugin(mongooseHistory, this.history_options);
     }
     return schemalist;
@@ -201,7 +222,7 @@ export class SchemasService implements OnModuleInit {
         }
       }
     ]);
-    return  await m.aggregate(aggregation).option({ allowDiskUse: true });
+    return await m.aggregate(aggregation).option({ allowDiskUse: true });
   };
 
   private createFTAggregation(name: string) {
@@ -268,40 +289,80 @@ export class SchemasService implements OnModuleInit {
    * used in presave hooks to create/update the full text normalisation field
    * TODO: paths should come from configservice, wich is currently not available in
    * presave hooks
+   * TODO: this assumes that the record submitted to be saved is fully populated (wich is usually the case when it's
+   * edited) to make the API resilient, it should check population beforehand and populate if need be
    * @param req
    * @param res
    * @param next
    * @private
    */
   private createFtiField(req: Request, res: Response, next: NextFunction) {
-    const paths = [
-      { path: 'name' },
-      { path: 'originalTitle' },
-      { path: 'transscription'},
-      { path: 'creator.id', target: 'actor' },
-      { path: 'material', target: 'descriptor' },
-      { path: 'technique', target: 'descriptor' },
-      { path: 'partOf', target: 'collect' },
-      { path: 'classification.descriptor', target: 'descriptor' },
-    ];
-    const aggregation = [];
-    paths.forEach(path => {
-      if(path.path && path.target) {
-        if(path.path.split('.').length > 1) {
-          aggregation.push(req.body[path.path.split('.')[0]].reduce(function (a, c) {
-            return `${a} ${c[path.path.split('.')[1]].name}`
-          }, ''));
+    const name = req.originalUrl.split('/')[3];
+    const paths = ftiConfig[name];
+    if(paths) {
+      const aggregation = [];
+      paths.forEach(path => {
+        if(path.path && path.target) {
+          if(path.path.split('.').length > 1) {
+            aggregation.push(req.body[path.path.split('.')[0]].reduce(function (a, c) {
+              return `${a} ${c[path.path.split('.')[1]].name}`
+            }, ''));
+          }
+          else _.get(req.body, `${path.path}.name`);
         }
-        else _.get(req.body, `${path.path}.name`);
-      }
-      else if(path.path) {
-        aggregation.push(
-          _.get(req.body, path.path)
-        );
-      }
-    });
-    req.body.fti = aggregation.join(' ');
+        else if(path.path) {
+          aggregation.push(
+            _.get(req.body, path.path)
+          );
+        }
+      });
+      req.body.fti = aggregation.join(' ');
+    }
     next();
+  }
+
+  /**
+   * bulk update for full text normalisation field, requires memory limits to be manually set for larger collections
+   * TODO: the time of the last run should be saved, so it can be ran at regular intervals
+   * @param name
+   */
+  public async bulkFtiUpdate(name: string) {
+    const paths = ftiConfig[name]
+    const m = this.models[this.names.indexOf(name)]
+    if(paths) {
+      const records = await m.find();
+      let i = 1;
+      const ppaths = this.getPopulateablePathsFromSchemaObject(this.schemas[this.names.indexOf(name)].jsonSchema(), []).reduce(function (a,c) { return `${a} ${c.path}` },'');
+      records.forEach((r) => {
+       m.findOne({_id: r._id})
+         .populate(ppaths)
+         .exec( (err, rec) => {
+             if (err) return (err);
+             const aggregation = [];
+             paths.forEach((path) => {
+               if(path.path && path.target) {
+                 if(path.path.split('.').length > 1) {
+                   aggregation.push(rec[path.path.split('.')[0]].reduce(function (a, c) {
+                     if (c[path.path.split('.')[1]]) return `${a} ${c[path.path.split('.')[1]].name}`;
+                     else return a;
+                   }, ''));
+                 }
+                 else _.get(rec, `${path.path}.name`);
+               }
+               else if(path.path) {
+                 aggregation.push(
+                   _.get(rec, path.path)
+                 );
+               }
+             });
+            rec.fti = aggregation.join(' ');
+            rec.save();
+            i = i+1;
+          });
+      })
+
+    }
+    return;
   }
 
   /**

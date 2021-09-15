@@ -3,15 +3,17 @@ import {
   Get,
   Req,
   HttpStatus,
-  Param, HttpCode, Query, Response
+  Param, HttpCode, Query, Response, UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { SchemasService } from './schemas.service';
 import {
+  ApiBearerAuth,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('Root')
 @Controller()
@@ -53,5 +55,19 @@ export class SchemasController {
   ) {
     const results = await this.schemasService.ftsearch(type, query, operator, limit, skip, sort);
     return res.set({'X-Total-Count': results[0].total }).json(results[0].data);
+  }
+
+  @Get('/updatesearch/:type')
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({description: 'The Number of updated records.'})
+  @ApiNotFoundResponse({description: 'Record Type not found.'})
+  async updatesearch(
+    @Param('type') type: string,
+    @Response() res,
+  ) {
+    const updated = await this.schemasService.bulkFtiUpdate(type);
+    return res.json(updated);
   }
 }
