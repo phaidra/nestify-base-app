@@ -316,7 +316,7 @@ export class SchemasService implements OnModuleInit {
           );
         }
       });
-      req.body.fti = aggregation.join(' ');
+      req.body.fti = aggregation.join(' ').replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\r\n\{\}\[\]\\\/]/gi, '');
     }
     next();
   }
@@ -333,6 +333,7 @@ export class SchemasService implements OnModuleInit {
       const records = await m.find();
       let i = 1;
       const ppaths = this.getPopulateablePathsFromSchemaObject(this.schemas[this.names.indexOf(name)].jsonSchema(), []).reduce(function (a,c) { return `${a} ${c.path}` },'');
+      console.log(`bulk update for collection ${name} - writing ${records.length} records to database.`)
       records.forEach((r) => {
        m.findOne({_id: r._id})
          .populate(ppaths)
@@ -355,12 +356,12 @@ export class SchemasService implements OnModuleInit {
                  );
                }
              });
-            rec.fti = aggregation.join(' ');
+            rec.fti = aggregation.join(' ').replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\r\n\{\}\[\]\\\/]/gi, '');
             rec.save();
             i = i+1;
           });
       })
-
+      console.log(`bulk update for collection ${name} - DONE writing ${records.length} records to database.`)
     }
     return;
   }
