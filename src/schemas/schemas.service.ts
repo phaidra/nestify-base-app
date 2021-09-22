@@ -13,9 +13,10 @@ import restify from 'express-restify-mongoose';
 const mongoose = jsonSchema();
 import * as fs from 'fs';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Schema, Connection } from "mongoose";
+import { Model, Schema, Connection, Types } from 'mongoose';
 import { User } from '../user/interfaces/user.interface';
 import { NextFunction, Request, Response } from 'express';
+
 
 const ftiConfig = {
   'entry': [
@@ -180,110 +181,6 @@ export class SchemasService implements OnModuleInit {
     }
     return false;
   };
-
-  public async ftsearch(name: string, query: string, operator: string, limit: string, skip: string, sort: string) {
-    const q = query.match(/(".*?"|[^"\s]+)(?=\s*|\s*$)/g);
-    const m = this.models[this.names.indexOf(name)]
-    let aggregation = this.createFTAggregation(name);
-    const match = [];
-    const matchobject = { $match: {} }
-    const sortobject = {}
-    q.forEach(t => {
-      match.push({
-        ftindex: { "$regex": new RegExp(t.replace(/['"]+/g, ''), 'i')}
-      });
-    });
-    if(operator == '$or' || operator == '$and') matchobject['$match'][operator] = match;
-    else matchobject['$match']['$or'] = match;
-    if(sort.split('')[0] == "-") sortobject[sort.substr(1)] = -1;
-    else sortobject[sort] = 1;
-    aggregation = aggregation.concat([
-      matchobject,
-      { $sort: sortobject },
-      {
-        $facet: {
-          data: [
-            { $skip: parseInt(skip, 10) || 0 },
-            { $limit: parseInt(limit, 10) || 40 },
-          ],
-          metadata: [
-            {
-              $group: {
-                _id: null,
-                total: { $sum: 1 }
-              }
-            },
-          ],
-        }
-      },
-      { $project: {
-          data: 1,
-          total: { $arrayElemAt: [ '$metadata.total', 0 ] }
-        }
-      }
-    ]);
-    return await m.aggregate(aggregation).option({ allowDiskUse: true });
-  };
-
-  private createFTAggregation(name: string) {
-    let paths = this.configService.get(`ftsearch.${name}`);
-    if (!Array.isArray(paths)) paths = this.getPopulateablePathsFromSchemaObject(this.schemas[this.names.indexOf(name)].jsonSchema(), []);
-    const aggregation = [];
-    paths.forEach(path => {
-      if(path.path && path.target) {
-        aggregation.push({
-          '$lookup': {
-            'from': `${path.target}s`,
-            'localField': path.path,
-            'foreignField': '_id',
-            'as': path.path.split('.').join('')
-          }
-        });
-      }
-    });
-    aggregation.push({
-      $set: {
-        ftindex: ""
-      }
-    });
-    paths.forEach(path => {
-      if(path.path && path.target) {
-        aggregation.push({
-          '$set': {
-            'ftindex': {
-              '$reduce': {
-                'input': `$${path.path.split('.').join('')}`,
-                'initialValue': '$ftindex',
-                'in': {
-                  '$concat': [
-                    '$$value', ' ', '$$this.name'
-                  ]
-                }
-              }
-            }
-          }
-        });
-      }
-      else if(path.path) {
-        aggregation.push({
-          '$set': {
-            'ftindex': {
-              '$reduce': {
-                'input': [`$${path.path}`],
-                'initialValue': '$ftindex',
-                'in': {
-                  '$concat': [
-                    '$$value', ' ', '$$this'
-                  ]
-                }
-              }
-            }
-          }
-        });
-      }
-    });
-    return aggregation;
-  }
 
   /**
    * used in presave hooks to create/update the full text normalisation field

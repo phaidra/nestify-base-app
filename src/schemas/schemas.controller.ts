@@ -40,23 +40,6 @@ export class SchemasController {
     return this.schemasService.jsonSchemaByName(name);
   }
 
-  @Get('/search/:type/:query')
-  @HttpCode(HttpStatus.OK)
-  @ApiOkResponse({description: 'An Array of the requested Entities.'})
-  @ApiNotFoundResponse({description: 'Nothing Found.'})
-  async search(
-    @Param('type') type: string,
-    @Param('query') query: string,
-    @Query('operator') operator: string,
-    @Query('limit') limit: string,
-    @Query('skip') skip: string,
-    @Query('sort') sort: string,
-    @Response() res,
-  ) {
-    const results = await this.schemasService.ftsearch(type, query, operator, limit, skip, sort);
-    return res.set({'X-Total-Count': results[0].total }).json(results[0].data);
-  }
-
   @Get('/updatesearch/:type')
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
