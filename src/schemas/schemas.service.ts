@@ -16,6 +16,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Schema, Connection, Types } from 'mongoose';
 import { User } from '../user/interfaces/user.interface';
 import { NextFunction, Request, Response } from 'express';
+import { parse } from 'json2csv';
 
 
 const ftiConfig = {
@@ -38,6 +39,20 @@ const ftiConfig = {
     { path: 'description', target: 'descriptor'}
   ]
 }
+const csvConfig = {
+  fields: [
+    'name',
+    'originalTitle',
+    'technique.0.name',
+    'classification.0.descriptor.name',
+    'classification.1.descriptor.name',
+    'classification.2.descriptor.name',
+    'creator.0.id.name',
+    'creator.1.id.name',
+    'creator.2.id.name',
+  ],
+};
+
 
 @Injectable()
 export class SchemasService implements OnModuleInit {
@@ -146,6 +161,7 @@ export class SchemasService implements OnModuleInit {
         preCreate: [this.authService.validateUserExternal, this.createFtiField],
         preUpdate: [this.authService.validateUserExternal, this.createFtiField],
         preDelete: [this.authService.validateUserExternal],
+        postRead: [this.exportCSV],
         totalCountHeader: true,
       });
     }
@@ -180,6 +196,19 @@ export class SchemasService implements OnModuleInit {
       }
     }
     return false;
+  };
+
+  private exportCSV(req: any, res: Response, next: NextFunction) {
+    console.log(req.query.export);
+    if(req.query.export === "csv") {
+      try {
+        const csv = parse(req.erm.result, csvConfig);
+        res.setHeader('content-type', 'text/csv');
+        res.send(csv);
+      } catch (err) {
+        console.error(err);
+      }
+    } else next();
   };
 
   /**
@@ -348,12 +377,21 @@ export class SchemasService implements OnModuleInit {
             'in': 'query',
             'schema': { type: 'string' },
           },
+          {
+            'name': 'export',
+            'description': 'export format, if desired',
+            'in': 'query',
+            'schema': { type: 'string' },
+          },
         ],
         'responses': {
           200: {
             'description': `Returns a List of ${name}`,
             'content':{
               'application/json': {
+                'schema': { '$ref': `#/components/schemas/${name}` },
+              },
+              'text/csv': {
                 'schema': { '$ref': `#/components/schemas/${name}` },
               },
             },
