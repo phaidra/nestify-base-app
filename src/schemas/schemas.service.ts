@@ -43,13 +43,22 @@ const csvConfig = {
   fields: [
     'name',
     'originalTitle',
+    'transscription',
+    'provinience',
     'technique.0.name',
+    'material.0.name',
     'classification.0.descriptor.name',
     'classification.1.descriptor.name',
     'classification.2.descriptor.name',
     'creator.0.id.name',
     'creator.1.id.name',
     'creator.2.id.name',
+    'transaction.0.ref.price.0.amount',
+    'transaction.0.ref.price.0.currency',
+    'transaction.1.ref.price.0.amount',
+    'transaction.1.ref.price.0.currency',
+    'relations.0.target.name',
+    'relations.1.target.name',
   ],
 };
 
