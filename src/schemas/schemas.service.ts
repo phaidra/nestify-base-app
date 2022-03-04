@@ -60,6 +60,8 @@ const csvConfig = {
     'relations.0.target.name',
     'relations.1.target.name',
   ],
+  defaultValue: '-',
+  delimiter: ';',
 };
 
 
