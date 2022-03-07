@@ -42,25 +42,82 @@ const ftiConfig = {
 }
 const csvConfig = {
   fields: [
-    'name',
-    'originalTitle',
-    'transscription',
-    'provinience',
-    'technique.0.name',
-    'material.0.name',
-    'classification.0.descriptor.name',
-    'classification.1.descriptor.name',
-    'classification.2.descriptor.name',
-    'creator.0.id.name',
-    'creator.1.id.name',
-    'creator.2.id.name',
-    'transaction.0.ref.price.0.amount',
-    'transaction.0.ref.price.0.currency',
-    'transaction.1.ref.price.0.amount',
-    'transaction.1.ref.price.0.currency',
-    'relations.0.target.name',
-    'relations.1.target.name',
-    'place.0.name'
+    {
+        label: 'Name',
+        value: `name`,
+    },
+    {
+        label: 'originalTitle',
+        value: `originalTitle.0.originalTitle`,
+    },
+    {
+        label: 'Transscription',
+        value: `transscription`,
+    },
+    {
+        label: 'Provinience',
+        value: `provinience`,
+    },
+    {
+        label: 'Technique',
+        value: `technique.0.name`,
+    },
+    {
+        label: 'Material',
+        value: `material.0.name`,
+    },
+    {
+        label: 'Classification',
+        value: `classification.0.descriptor.name`,
+    },
+    {
+        label: 'Classification',
+        value: `classification.1.descriptor.name`,
+    },
+    {
+        label: 'Classification',
+        value: `classification.2.descriptor.name`,
+    },
+    {
+        label: 'Creator Name',
+        value: `creator.0.id.name`,
+    },
+    {
+        label: 'Creator Name',
+        value: `creator.1.id.name`,
+    },
+    {
+        label: 'Creator Name',
+        value: `creator.2.id.name`,
+    },
+    {
+        label: 'Transaction Amount',
+        value: `transaction.0.ref.price.0.amount`,
+    },
+    {
+        label: 'Transaction Currency',
+        value: `transaction.0.ref.price.0.currency`,
+    },
+    {
+        label: 'Transaction Amount',
+        value: `transaction.1.ref.price.0.amount`,
+    },
+    {
+        label: 'Transaction Currency',
+        value: `transaction.1.ref.price.0.currency`,
+    },
+    {
+        label: 'Relations Target Name',
+        value: `relations.0.target.name`,
+    },
+    {
+        label: 'Relations Target Name',
+        value: `relations.1.target.name`,
+    },
+    {
+        label: 'Place',
+        value: `place.0.name`,
+    }
   ],
   defaultValue: '-',
   delimiter: ';',
