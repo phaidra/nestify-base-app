@@ -29,11 +29,12 @@ const ftiConfig = {
     { path: 'technique', target: 'descriptor' },
     { path: 'partOf', target: 'collect' },
     { path: 'classification.descriptor', target: 'descriptor' },
+    { path: 'place.0.name', target: 'descriptor' }
   ],
   'collect': [
     { path: 'name'},
     { path: 'creator.id', target: 'actor' },
-    { path: 'place', target: 'descriptor' },
+    { path: 'place.0.name', target: 'descriptor' },
     { path: 'time', target: 'descriptor' },
     { path: 'classification.descriptor', target: 'descriptor' },
     { path: 'description', target: 'descriptor'}
@@ -59,6 +60,7 @@ const csvConfig = {
     'transaction.1.ref.price.0.currency',
     'relations.0.target.name',
     'relations.1.target.name',
+    'place.0.name'
   ],
   defaultValue: '-',
   delimiter: ';',
