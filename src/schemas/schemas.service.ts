@@ -47,15 +47,15 @@ const csvConfig = {
         value: `name`,
     },
     {
-        label: 'originalTitle',
+        label: 'Original Title',
         value: `originalTitle.0.originalTitle`,
     },
     {
-        label: 'Transscription',
+        label: 'Transcription',
         value: `transscription`,
     },
     {
-        label: 'Provinience',
+        label: 'Provenance',
         value: `provinience`,
     },
     {
@@ -67,16 +67,20 @@ const csvConfig = {
         value: `material.0.name`,
     },
     {
-        label: 'Classification',
+        label: 'Object Type',
         value: `classification.0.descriptor.name`,
     },
     {
-        label: 'Classification',
+        label: 'Subject',
         value: `classification.1.descriptor.name`,
     },
     {
-        label: 'Classification',
+        label: 'Data Range',
         value: `classification.2.descriptor.name`,
+    },
+    {
+      label: 'School',
+      value: `classification.3.descriptor.name`,
     },
     {
         label: 'Creator Name',
@@ -91,22 +95,6 @@ const csvConfig = {
         value: `creator.2.id.name`,
     },
     {
-        label: 'Transaction Amount',
-        value: `transaction.0.ref.price.0.amount`,
-    },
-    {
-        label: 'Transaction Currency',
-        value: `transaction.0.ref.price.0.currency`,
-    },
-    {
-        label: 'Transaction Amount',
-        value: `transaction.1.ref.price.0.amount`,
-    },
-    {
-        label: 'Transaction Currency',
-        value: `transaction.1.ref.price.0.currency`,
-    },
-    {
         label: 'Relations Target Name',
         value: `relations.0.target.name`,
     },
@@ -115,9 +103,57 @@ const csvConfig = {
         value: `relations.1.target.name`,
     },
     {
+      label: 'Transaction (Inbound) - Type',
+      value: `acquisition_type.name`,
+    },
+    {
         label: 'Place',
         value: `place.0.name`,
-    }
+    },
+    {
+      label: 'Transaction (Inbound) - Date',
+      value: `acquisition_ref.date`,
+    },
+    {
+      label: 'Transaction (Inbound) - Price',
+      value: `acquisition_ref.price[0].amount`,
+    },
+    {
+      label: 'Transaction (Inbound) - currency',
+      value: `acquisition_ref.price[0].currency.name`,
+    },
+    {
+      label: 'Transaction (Inbound) - Type',
+      value: `acquisition_type.name`,
+    },
+    {
+      label: 'Transaction (Inbound) - Estimate Price',
+      value: `acquisition_est[0].amount`,
+    },
+    {
+      label: 'Transaction (Inbound) - Estimate Currency',
+      value: `acquisition_est[0].currency.name`,
+    },
+    {
+      label: 'Transaction (Outbound) - Date',
+      value: `destitution_ref.date`,
+    },
+    {
+      label: 'Transaction (Outbound) - Price',
+      value: `destitution_ref.price[0].amount`,
+    },
+    {
+      label: 'Transaction (Outbound) - currency',
+      value: `destitution_ref.price[0].currency.name`,
+    },
+    {
+      label: 'Transaction (Outbound) - Estimate Price',
+      value: `destitution_est[0].amount`,
+    },
+    {
+      label: 'Transaction (Outbound) - Estimate Currency',
+      value: `destitution_est[0].currency.name`,
+    },
   ],
   defaultValue: '-',
   delimiter: ';',
