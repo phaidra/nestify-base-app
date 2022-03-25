@@ -29,12 +29,12 @@ const ftiConfig = {
     { path: 'technique', target: 'descriptor' },
     { path: 'partOf', target: 'collect' },
     { path: 'classification.descriptor', target: 'descriptor' },
-    { path: 'place.0.name', target: 'descriptor' }
+    { path: 'place', target: 'descriptor' }
   ],
   'collect': [
     { path: 'name'},
     { path: 'creator.id', target: 'actor' },
-    { path: 'place.0.name', target: 'descriptor' },
+    { path: 'place', target: 'descriptor' },
     { path: 'time', target: 'descriptor' },
     { path: 'classification.descriptor', target: 'descriptor' },
     { path: 'description', target: 'descriptor'}
@@ -336,6 +336,7 @@ export class SchemasService implements OnModuleInit {
       paths.forEach(path => {
         if(path.path && path.target) {
           if(path.path.split('.').length > 1) {
+            console.log(req.body, path.path.split('.'));
             aggregation.push(req.body[path.path.split('.')[0]].reduce(function (a, c) {
               return `${a} ${c[path.path.split('.')[1]].name}`
             }, ''));
