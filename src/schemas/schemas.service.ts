@@ -48,7 +48,7 @@ const csvConfig = {
     },
     {
         label: 'Original Title',
-        value: `originalTitle.0.originalTitle`,
+        value: `originalTitle`,
     },
     {
         label: 'Transcription',
@@ -349,7 +349,10 @@ export class SchemasService implements OnModuleInit {
           );
         }
       });
-      req.body.fti = aggregation.join(' ').replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\r\n\{\}\[\]\\\/]/gi, '');
+      req.body.fti = aggregation.join(' ')
+        .normalize("NFD") //decompose combined graphemes
+        .replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\r\n\{\}\[\]\\\/]/gi, '') //remove special chars
+        .replace(/[\u0300-\u036f]/g, ""); //remove diacritics
     }
     next();
   }
