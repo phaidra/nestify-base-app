@@ -68,19 +68,19 @@ const csvConfig = {
     },
     {
         label: 'Object Type',
-        value: `classification.0.descriptor.name`,
+        value: `type1`,
     },
     {
         label: 'Subject',
-        value: `classification.1.descriptor.name`,
+        value: `subject1`,
     },
     {
         label: 'Data Range',
-        value: `classification.2.descriptor.name`,
+        value: `daterange1`,
     },
     {
       label: 'School',
-      value: `classification.3.descriptor.name`,
+      value: `school1`,
     },
     {
         label: 'Creator Name',
@@ -157,6 +157,14 @@ const csvConfig = {
   ],
   defaultValue: '-',
   delimiter: ';',
+  excelStrings: true,
+  withBOM: true,
+  transforms: [
+    (item) => ({ ...item, school1: item.classification.filter(c => c.aspect.name === 'Schule')[0]}),
+    (item) => ({ ...item, daterange1: item.classification.filter(c => c.aspect.name === 'Datierung')[0]}),
+    (item) => ({ ...item, subject1: item.classification.filter(c => c.aspect.name === 'Thema')[0]}),
+    (item) => ({ ...item, type1: item.classification.filter(c => c.aspect.name === 'Thema')[0]}),
+  ]
 };
 
 
