@@ -400,7 +400,10 @@ export class SchemasService implements OnModuleInit {
                  );
                }
              });
-            rec.fti = aggregation.join(' ').replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\r\n\{\}\[\]\\\/]/gi, '');
+            rec.fti = aggregation.join(' ')
+              .normalize("NFD") //decompose combined graphemes
+              .replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\r\n\{\}\[\]\\\/]/gi, '') //remove special chars
+              .replace(/[\u0300-\u036f]/g, ""); //remove diacritics
             rec.save();
             i = i+1;
           });
