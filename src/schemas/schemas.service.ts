@@ -68,19 +68,51 @@ const csvConfig = {
     },
     {
         label: 'Object Type',
-        value: `type1`,
+        value: `type1.descriptor.name`,
+    },
+    {
+      label: 'Object Type',
+      value: `type2.descriptor.name`,
+    },
+    {
+      label: 'Object Type',
+      value: `type3.descriptor.name`,
     },
     {
         label: 'Subject',
-        value: `subject1`,
+        value: `subject1.descriptor.name`,
+    },
+    {
+      label: 'Subject',
+      value: `subject2.descriptor.name`,
+    },
+    {
+      label: 'Subject',
+      value: `subject3.descriptor.name`,
     },
     {
         label: 'Data Range',
-        value: `daterange1`,
+        value: `daterange1.descriptor.name`,
+    },
+    {
+      label: 'Data Range',
+      value: `daterange2.descriptor.name`,
+    },
+    {
+      label: 'Data Range',
+      value: `daterange3.descriptor.name`,
     },
     {
       label: 'School',
-      value: `school1`,
+      value: `school1.descriptor.name`,
+    },
+    {
+      label: 'School',
+      value: `school2.descriptor.name`,
+    },
+    {
+      label: 'School',
+      value: `school3.descriptor.name`,
     },
     {
         label: 'Creator Name',
@@ -156,14 +188,22 @@ const csvConfig = {
     },
   ],
   defaultValue: '-',
-  delimiter: ';',
+  delimiter: ',',
   excelStrings: true,
   withBOM: true,
   transforms: [
-    (item) => ({ ...item, school1: item.classification.filter(c => c.aspect.name === 'Schule')[0]}),
-    (item) => ({ ...item, daterange1: item.classification.filter(c => c.aspect.name === 'Datierung')[0]}),
-    (item) => ({ ...item, subject1: item.classification.filter(c => c.aspect.name === 'Thema')[0]}),
-    (item) => ({ ...item, type1: item.classification.filter(c => c.aspect.name === 'Thema')[0]}),
+    (item) => ({ ...item, school1: item.classification.filter(c => _.get(c, 'aspect.name') === 'Schule')[0]}),
+    (item) => ({ ...item, school2: item.classification.filter(c => _.get(c, 'aspect.name') === 'Schule')[1]}),
+    (item) => ({ ...item, school3: item.classification.filter(c => _.get(c, 'aspect.name') === 'Schule')[2]}),
+    (item) => ({ ...item, daterange1: item.classification.filter(c => _.get(c, 'aspect.name') === 'Datierung')[0]}),
+    (item) => ({ ...item, daterange2: item.classification.filter(c => _.get(c, 'aspect.name') === 'Datierung')[1]}),
+    (item) => ({ ...item, daterange3: item.classification.filter(c => _.get(c, 'aspect.name') === 'Datierung')[2]}),
+    (item) => ({ ...item, subject1: item.classification.filter(c => _.get(c, 'aspect.name') === 'Thema')[0]}),
+    (item) => ({ ...item, subject2: item.classification.filter(c => _.get(c, 'aspect.name') === 'Thema')[1]}),
+    (item) => ({ ...item, subject3: item.classification.filter(c => _.get(c, 'aspect.name') === 'Thema')[2]}),
+    (item) => ({ ...item, type1: item.classification.filter(c => _.get(c, 'aspect.name') === 'Kunstgattung')[0]}),
+    (item) => ({ ...item, type2: item.classification.filter(c => _.get(c, 'aspect.name') === 'Kunstgattung')[1]}),
+    (item) => ({ ...item, type3: item.classification.filter(c => _.get(c, 'aspect.name') === 'Kunstgattung')[2]}),
   ]
 };
 
