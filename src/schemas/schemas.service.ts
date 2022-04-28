@@ -40,151 +40,12 @@ const ftiConfig = {
     { path: 'description', target: 'descriptor'}
   ]
 }
+
 const csvConfig = {
   fields: [
     {
         label: 'Name',
         value: `name`,
-    },
-    {
-        label: 'Original Title',
-        value: `originalTitle`,
-    },
-    {
-        label: 'Transcription',
-        value: `transscription`,
-    },
-    {
-        label: 'Provenance',
-        value: `provinience`,
-    },
-    {
-        label: 'Technique',
-        value: `technique.0.name`,
-    },
-    {
-        label: 'Material',
-        value: `material.0.name`,
-    },
-    {
-        label: 'Object Type',
-        value: `type1.descriptor.name`,
-    },
-    {
-      label: 'Object Type',
-      value: `type2.descriptor.name`,
-    },
-    {
-      label: 'Object Type',
-      value: `type3.descriptor.name`,
-    },
-    {
-        label: 'Subject',
-        value: `subject1.descriptor.name`,
-    },
-    {
-      label: 'Subject',
-      value: `subject2.descriptor.name`,
-    },
-    {
-      label: 'Subject',
-      value: `subject3.descriptor.name`,
-    },
-    {
-        label: 'Data Range',
-        value: `daterange1.descriptor.name`,
-    },
-    {
-      label: 'Data Range',
-      value: `daterange2.descriptor.name`,
-    },
-    {
-      label: 'Data Range',
-      value: `daterange3.descriptor.name`,
-    },
-    {
-      label: 'School',
-      value: `school1.descriptor.name`,
-    },
-    {
-      label: 'School',
-      value: `school2.descriptor.name`,
-    },
-    {
-      label: 'School',
-      value: `school3.descriptor.name`,
-    },
-    {
-        label: 'Creator Name',
-        value: `creator.0.id.name`,
-    },
-    {
-        label: 'Creator Name',
-        value: `creator.1.id.name`,
-    },
-    {
-        label: 'Creator Name',
-        value: `creator.2.id.name`,
-    },
-    {
-        label: 'Relations Target Name',
-        value: `relations.0.target.name`,
-    },
-    {
-        label: 'Relations Target Name',
-        value: `relations.1.target.name`,
-    },
-    {
-      label: 'Transaction (Inbound) - Type',
-      value: `acquisition_type.name`,
-    },
-    {
-        label: 'Place',
-        value: `place.0.name`,
-    },
-    {
-      label: 'Transaction (Inbound) - Date',
-      value: `acquisition_ref.date`,
-    },
-    {
-      label: 'Transaction (Inbound) - Price',
-      value: `acquisition_ref.price[0].amount`,
-    },
-    {
-      label: 'Transaction (Inbound) - currency',
-      value: `acquisition_ref.price[0].currency.name`,
-    },
-    {
-      label: 'Transaction (Inbound) - Type',
-      value: `acquisition_type.name`,
-    },
-    {
-      label: 'Transaction (Inbound) - Estimate Price',
-      value: `acquisition_est[0].amount`,
-    },
-    {
-      label: 'Transaction (Inbound) - Estimate Currency',
-      value: `acquisition_est[0].currency.name`,
-    },
-    {
-      label: 'Transaction (Outbound) - Date',
-      value: `destitution_ref.date`,
-    },
-    {
-      label: 'Transaction (Outbound) - Price',
-      value: `destitution_ref.price[0].amount`,
-    },
-    {
-      label: 'Transaction (Outbound) - currency',
-      value: `destitution_ref.price[0].currency.name`,
-    },
-    {
-      label: 'Transaction (Outbound) - Estimate Price',
-      value: `destitution_est[0].amount`,
-    },
-    {
-      label: 'Transaction (Outbound) - Estimate Currency',
-      value: `destitution_est[0].currency.name`,
     },
   ],
   defaultValue: '-',
@@ -192,20 +53,198 @@ const csvConfig = {
   excelStrings: true,
   withBOM: true,
   transforms: [
-    (item) => ({ ...item, school1: item.classification.filter(c => _.get(c, 'aspect.name') === 'Schule')[0]}),
-    (item) => ({ ...item, school2: item.classification.filter(c => _.get(c, 'aspect.name') === 'Schule')[1]}),
-    (item) => ({ ...item, school3: item.classification.filter(c => _.get(c, 'aspect.name') === 'Schule')[2]}),
-    (item) => ({ ...item, daterange1: item.classification.filter(c => _.get(c, 'aspect.name') === 'Datierung')[0]}),
-    (item) => ({ ...item, daterange2: item.classification.filter(c => _.get(c, 'aspect.name') === 'Datierung')[1]}),
-    (item) => ({ ...item, daterange3: item.classification.filter(c => _.get(c, 'aspect.name') === 'Datierung')[2]}),
-    (item) => ({ ...item, subject1: item.classification.filter(c => _.get(c, 'aspect.name') === 'Thema')[0]}),
-    (item) => ({ ...item, subject2: item.classification.filter(c => _.get(c, 'aspect.name') === 'Thema')[1]}),
-    (item) => ({ ...item, subject3: item.classification.filter(c => _.get(c, 'aspect.name') === 'Thema')[2]}),
-    (item) => ({ ...item, type1: item.classification.filter(c => _.get(c, 'aspect.name') === 'Kunstgattung')[0]}),
-    (item) => ({ ...item, type2: item.classification.filter(c => _.get(c, 'aspect.name') === 'Kunstgattung')[1]}),
-    (item) => ({ ...item, type3: item.classification.filter(c => _.get(c, 'aspect.name') === 'Kunstgattung')[2]}),
+    (item) => ({ ...item, school1: item.classification ? item.classification.filter(c => _.get(c, 'aspect.name') === 'Schule')[0] : null}),
+    (item) => ({ ...item, school2: item.classification ? item.classification.filter(c => _.get(c, 'aspect.name') === 'Schule')[1] : null}),
+    (item) => ({ ...item, school3: item.classification ? item.classification.filter(c => _.get(c, 'aspect.name') === 'Schule')[2] : null}),
+    (item) => ({ ...item, daterange1: item.classification ? item.classification.filter(c => _.get(c, 'aspect.name') === 'Datierung')[0] : null}),
+    (item) => ({ ...item, daterange2: item.classification ? item.classification.filter(c => _.get(c, 'aspect.name') === 'Datierung')[1] : null}),
+    (item) => ({ ...item, daterange3: item.classification ? item.classification.filter(c => _.get(c, 'aspect.name') === 'Datierung')[2] : null}),
+    (item) => ({ ...item, subject1: item.classification ? item.classification.filter(c => _.get(c, 'aspect.name') === 'Thema')[0] : null}),
+    (item) => ({ ...item, subject2: item.classification ? item.classification.filter(c => _.get(c, 'aspect.name') === 'Thema')[1] : null}),
+    (item) => ({ ...item, subject3: item.classification ? item.classification.filter(c => _.get(c, 'aspect.name') === 'Thema')[2] : null}),
+    (item) => ({ ...item, type1: item.classification ? item.classification.filter(c => _.get(c, 'aspect.name') === 'Kunstgattung')[0] : null}),
+    (item) => ({ ...item, type2: item.classification ? item.classification.filter(c => _.get(c, 'aspect.name') === 'Kunstgattung')[1] : null}),
+    (item) => ({ ...item, type3: item.classification ? item.classification.filter(c => _.get(c, 'aspect.name') === 'Kunstgattung')[2] : null}),
   ]
 };
+const csvExportFields = {
+  entry: [
+  {
+    label: 'Name',
+    value: `name`,
+  },
+  {
+    label: 'Original Title',
+    value: `originalTitle`,
+  },
+  {
+    label: 'Transcription',
+    value: `transscription`,
+  },
+  {
+    label: 'Provenance',
+    value: `provinience`,
+  },
+  {
+    label: 'Technique',
+    value: `technique.0.name`,
+  },
+  {
+    label: 'Material',
+    value: `material.0.name`,
+  },
+  {
+    label: 'Object Type',
+    value: `type1.descriptor.name`,
+  },
+  {
+    label: 'Object Type',
+    value: `type2.descriptor.name`,
+  },
+  {
+    label: 'Object Type',
+    value: `type3.descriptor.name`,
+  },
+  {
+    label: 'Subject',
+    value: `subject1.descriptor.name`,
+  },
+  {
+    label: 'Subject',
+    value: `subject2.descriptor.name`,
+  },
+  {
+    label: 'Subject',
+    value: `subject3.descriptor.name`,
+  },
+  {
+    label: 'Data Range',
+    value: `daterange1.descriptor.name`,
+  },
+  {
+    label: 'Data Range',
+    value: `daterange2.descriptor.name`,
+  },
+  {
+    label: 'Data Range',
+    value: `daterange3.descriptor.name`,
+  },
+  {
+    label: 'School',
+    value: `school1.descriptor.name`,
+  },
+  {
+    label: 'School',
+    value: `school2.descriptor.name`,
+  },
+  {
+    label: 'School',
+    value: `school3.descriptor.name`,
+  },
+  {
+    label: 'Creator Name',
+    value: `creator.0.id.name`,
+  },
+  {
+    label: 'Creator Name',
+    value: `creator.1.id.name`,
+  },
+  {
+    label: 'Creator Name',
+    value: `creator.2.id.name`,
+  },
+  {
+    label: 'Relations Target Name',
+    value: `relations.0.target.name`,
+  },
+  {
+    label: 'Relations Target Name',
+    value: `relations.1.target.name`,
+  },
+  {
+    label: 'Transaction (Inbound) - Type',
+    value: `acquisition_type.name`,
+  },
+  {
+    label: 'Place',
+    value: `place.0.name`,
+  },
+  {
+    label: 'Transaction (Inbound) - Date',
+    value: `acquisition_ref.date`,
+  },
+  {
+    label: 'Transaction (Inbound) - Price',
+    value: `acquisition_ref.price[0].amount`,
+  },
+  {
+    label: 'Transaction (Inbound) - currency',
+    value: `acquisition_ref.price[0].currency.name`,
+  },
+  {
+    label: 'Transaction (Inbound) - Type',
+    value: `acquisition_type.name`,
+  },
+  {
+    label: 'Transaction (Inbound) - Estimate Price',
+    value: `acquisition_est[0].amount`,
+  },
+  {
+    label: 'Transaction (Inbound) - Estimate Currency',
+    value: `acquisition_est[0].currency.name`,
+  },
+  {
+    label: 'Transaction (Outbound) - Date',
+    value: `destitution_ref.date`,
+  },
+  {
+    label: 'Transaction (Outbound) - Price',
+    value: `destitution_ref.price[0].amount`,
+  },
+  {
+    label: 'Transaction (Outbound) - currency',
+    value: `destitution_ref.price[0].currency.name`,
+  },
+  {
+    label: 'Transaction (Outbound) - Estimate Price',
+    value: `destitution_est[0].amount`,
+  },
+  {
+    label: 'Transaction (Outbound) - Estimate Currency',
+    value: `destitution_est[0].currency.name`,
+  },
+],
+  actor: [
+    {
+      label: 'Name',
+      value: `name`,
+    },
+    {
+      label: 'Description',
+      value: `description`,
+    },
+    {
+      label: 'Identifier',
+      value: `identifier.0`,
+    },
+    {
+      label: 'Identifier',
+      value: `identifier.1`,
+    },
+    {
+      label: 'Identifier',
+      value: `identifier.2`,
+    },
+    {
+      label: 'Begin of Existence',
+      value: `beginOfExistence`,
+    },
+    {
+      label: 'End of Existence',
+      value: `endOfExistence`,
+    },
+  ],
+}
 
 
 @Injectable()
@@ -353,8 +392,9 @@ export class SchemasService implements OnModuleInit {
   };
 
   private exportCSV(req: any, res: Response, next: NextFunction) {
-    console.log(req.query.export);
     if(req.query.export === "csv") {
+      const entity = _.last(req.path.split('/'));
+      if (Array.isArray(csvExportFields[entity])) csvConfig.fields = csvExportFields[entity];
       try {
         const csv = parse(req.erm.result, csvConfig);
         res.setHeader('content-type', 'text/csv');
