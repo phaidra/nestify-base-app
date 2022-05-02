@@ -41,6 +41,29 @@ const ftiConfig = {
   ]
 }
 
+const sortIndexConfig = {
+  collect: [
+    { text: 'Creator', value: 'creator.id', path: 'creator[0].id.name' },
+  ],
+  inventory: [
+  ],
+  entry: [
+    { text: 'Creator', value: 'creator.id', path: 'creator[0].id.name' },
+  ],
+  object: [
+    { text: 'Creator', value: 'creator.id', path: 'creator[0].id.name' },
+  ],
+  transaction: [
+    { text: 'Actor', value: 'actor.id', path: 'actor[0].id.name' },
+    { text: 'From', value: 'entry_destitution_ref', path: 'entry_destitution_ref[0].name' },
+    { text: 'To', value: 'entry_acquisition_ref', path: 'entry_acquisition_ref[0].name' },
+  ],
+  actor: [
+  ],
+  descriptor: [
+  ],
+};
+
 const csvConfig = {
   fields: [
     {
@@ -351,8 +374,8 @@ export class SchemasService implements OnModuleInit {
   private restifyModels(host: HttpAdapterHost) {
     for (let i = 0; i < this.names.length; i++) {
       restify.serve(host.httpAdapter, this.models[i], {
-        preCreate: [this.authService.validateUserExternal, this.createFtiField],
-        preUpdate: [this.authService.validateUserExternal, this.createFtiField],
+        preCreate: [this.authService.validateUserExternal, this.createFtiField, this.createSortIndexFields],
+        preUpdate: [this.authService.validateUserExternal, this.createFtiField, this.createSortIndexFields],
         preDelete: [this.authService.validateUserExternal],
         postRead: [this.exportCSV],
         totalCountHeader: true,
@@ -439,7 +462,7 @@ export class SchemasService implements OnModuleInit {
       });
       req.body.fti = aggregation.join(' ')
         .normalize("NFD") //decompose combined graphemes
-        .replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\r\n\{\}\[\]\\\/]/gi, '') //remove special chars
+        .replace(/[`~!@#$%^&*()_|+\-=?;:'",<>\r\n\{\}\[\]\\\/]/gi, '') //remove special chars
         .replace(/[\u0300-\u036f]/g, ""); //remove diacritics
     }
     next();
@@ -456,41 +479,85 @@ export class SchemasService implements OnModuleInit {
     if(paths) {
       const records = await m.find();
       let i = 1;
+      let j = 1;
       const ppaths = this.getPopulateablePathsFromSchemaObject(this.schemas[this.names.indexOf(name)].jsonSchema(), []).reduce(function (a,c) { return `${a} ${c.path}` },'');
       console.log(`bulk update for collection ${name} - writing ${records.length} records to database.`)
+      console.time('bulkFtiUpdate');
       records.forEach((r) => {
-       m.findOne({_id: r._id})
-         .populate(ppaths)
-         .exec( (err, rec) => {
-             if (err) return (err);
-             const aggregation = [];
-             paths.forEach((path) => {
-               if(path.path && path.target) {
-                 if(path.path.split('.').length > 1) {
-                   aggregation.push(rec[path.path.split('.')[0]].reduce(function (a, c) {
-                     if (c[path.path.split('.')[1]]) return `${a} ${c[path.path.split('.')[1]].name}`;
-                     else return a;
-                   }, ''));
-                 }
-                 else _.get(rec, `${path.path}.name`);
-               }
-               else if(path.path) {
-                 aggregation.push(
-                   _.get(rec, path.path)
-                 );
-               }
-             });
+        m.findOne({_id: r._id})
+          .populate(ppaths)
+          .exec( (err, rec) => {
+            if (err) {
+              console.log(err);
+            }
+            const aggregation = [];
+            paths.forEach((path) => {
+             if(path.path && path.target && path.path.split('.').length > 1) {
+               aggregation.push(rec[path.path.split('.')[0]].reduce(function (a, c) {
+                 if (c[path.path.split('.')[1]]) return `${a} ${c[path.path.split('.')[1]].name}`;
+                 else return a;
+               }, ''));
+             }
+             else if(path.path) {
+               aggregation.push(
+                 _.get(rec, path.path)
+               );
+             }
+           });
             rec.fti = aggregation.join(' ')
               .normalize("NFD") //decompose combined graphemes
-              .replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\r\n\{\}\[\]\\\/]/gi, '') //remove special chars
+              .replace(/[`~!@#$%^&*()_|+\-=?;:'",<>\r\n\{\}\[\]\\\/]/gi, '') //remove special chars
               .replace(/[\u0300-\u036f]/g, ""); //remove diacritics
-            rec.save();
             i = i+1;
+            if ( i % 1000 === 0) {
+              console.log(`**** bulk update for collection ${name} - DONE enriching ${i} of ${records.length} records to database.`);
+              console.timeLog('bulkFtiUpdate');
+            }
+            rec.save()
+              .then(savedDoc => {
+                j = j+1;
+                if (j % 1000 === 0) {
+                  console.log(`**** bulk update for collection ${name} - DONE writing ${j} of ${records.length} records to database.`);
+                  console.timeLog('bulkFtiUpdate');
+                }
+                if (j >= records.length) console.timeEnd('bulkFtiUpdate');
+              })
+              .catch((err) => {
+                const errors = Object.keys(err.errors);
+                errors.forEach((e) => {
+                  console.log('**** ERROR in bulkFtiUpdate', e, err.errors[e].kind, err.errors[e].path, rec._id);
+                });
+              })
           });
       })
-      console.log(`bulk update for collection ${name} - DONE writing ${records.length} records to database.`)
     }
     return;
+  }
+
+  /**
+   * used in presave hooks to create/update the column sort normalisation fields
+   * TODO: paths should come from configservice, wich is currently not available in
+   * presave hooks
+   * TODO: this assumes that the record submitted to be saved is fully populated (wich is usually the case when it's
+   * edited) to make the API resilient, it should check population beforehand and populate if need be
+   * @param req
+   * @param res
+   * @param next
+   * @private
+   */
+  private createSortIndexFields(req: Request, res: Response, next: NextFunction) {
+    const name = req.originalUrl.split('/')[3];
+    const paths = ftiConfig[name];
+    if(paths && paths.length > 0) {
+      paths.forEach(path => {
+        if(path.path && path.value) {
+          if(path.path.split('.').length > 1) {
+            req.body[`${path.value.replace('.','_')}`] = _.get(req.body, path.path);
+          }
+        }
+      });
+    }
+    next();
   }
 
   /**
