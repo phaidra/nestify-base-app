@@ -18,26 +18,6 @@ export default () => ({
     'usercol': process.env.AUTH_USERCOL || '_user',
     'secret': process.env.AUTH_SECRET || 'secret',
   },
-  'ftsearch': {
-     'entry': [
-       { path: 'name' },
-       { path: 'originalTitle' },
-       { path: 'transscription'},
-       { path: 'creator.id', target: 'actor' },
-       { path: 'material', target: 'descriptor' },
-       { path: 'technique', target: 'descriptor' },
-       { path: 'partOf', target: 'collect' },
-       { path: 'classification.descriptor', target: 'descriptor' },
-     ],
-    'collect': [
-      { path: 'name'},
-      { path: 'creator.id', target: 'actor' },
-      { path: 'place', target: 'descriptor' },
-      { path: 'time', target: 'descriptor' },
-      { path: 'classification.descriptor', target: 'descriptor' },
-      { path: 'description', target: 'descriptor'}
-    ]
-  },
   'version': 1,
   'meta': {
     'title': 'Mongoose Nestify',
