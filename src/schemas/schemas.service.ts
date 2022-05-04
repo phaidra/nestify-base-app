@@ -18,6 +18,7 @@ import { User } from '../user/interfaces/user.interface';
 import { NextFunction, Request, Response } from 'express';
 import { parse } from 'json2csv';
 
+const indexPrefix = '__i';
 
 const ftiConfig = {
   'entry': [
@@ -330,7 +331,10 @@ export class SchemasService implements OnModuleInit {
   private createSchemasFromJSON(jsonlist: string[]): Schema<any>[] {
     const schemalist: Schema<any>[] = [];
     for (let i = 0; i < jsonlist.length; i++) {
-      const s = JSON.parse(fs.readFileSync(`${this.configService.get<string>('schemas.dir')}/${jsonlist[i]}`, 'utf8'));
+      const s = SchemasService.addIndexFields(
+        jsonlist[i].split('.')[0],
+        JSON.parse(fs.readFileSync(`${this.configService.get<string>('schemas.dir')}/${jsonlist[i]}`, 'utf8'))
+      );
       this.json[i] = s;
       schemalist[i] = new mongoose.Schema(this.converterService.convert(s), { versionKey: false });
       schemalist[i].plugin(mongooseHistory, this.history_options);
@@ -368,14 +372,27 @@ export class SchemasService implements OnModuleInit {
   }
 
   /**
+   * dynamically adding denormalization fields for indexing of referenced documents
+   */
+  private static addIndexFields(name: string, s: Record<string, any>): Record<string, any>{
+    if (Array.isArray(ftiConfig[name])) s[`${indexPrefix}_fti`] = { "type":"String" };
+    if (Array.isArray(sortIndexConfig[name])) {
+      sortIndexConfig[name].forEach(i => {
+        s[`${indexPrefix}_${i.value.replace('.','_')}`] = { "type":"String" };
+      })
+    }
+    return s;
+  }
+
+  /**
    *
    * @param host
    */
   private restifyModels(host: HttpAdapterHost) {
     for (let i = 0; i < this.names.length; i++) {
       restify.serve(host.httpAdapter, this.models[i], {
-        preCreate: [this.authService.validateUserExternal, this.createFtiField, this.createSortIndexFields],
-        preUpdate: [this.authService.validateUserExternal, this.createFtiField, this.createSortIndexFields],
+        preCreate: [this.authService.validateUserExternal, this.ftiUpdate, this.createSortIndexFields],
+        preUpdate: [this.authService.validateUserExternal, this.ftiUpdate, this.createSortIndexFields],
         preDelete: [this.authService.validateUserExternal],
         postRead: [this.exportCSV],
         totalCountHeader: true,
@@ -439,31 +456,11 @@ export class SchemasService implements OnModuleInit {
    * @param next
    * @private
    */
-  private createFtiField(req: Request, res: Response, next: NextFunction) {
+  private ftiUpdate(req: Request, res: Response, next: NextFunction) {
     const name = req.originalUrl.split('/')[3];
     const paths = ftiConfig[name];
     if(paths) {
-      const aggregation = [];
-      paths.forEach(path => {
-        if(path.path && path.target) {
-          if(path.path.split('.').length > 1) {
-            console.log(req.body, path.path.split('.'));
-            aggregation.push(req.body[path.path.split('.')[0]].reduce(function (a, c) {
-              return `${a} ${c[path.path.split('.')[1]].name}`
-            }, ''));
-          }
-          else _.get(req.body, `${path.path}.name`);
-        }
-        else if(path.path) {
-          aggregation.push(
-            _.get(req.body, path.path)
-          );
-        }
-      });
-      req.body.fti = aggregation.join(' ')
-        .normalize("NFD") //decompose combined graphemes
-        .replace(/[`~!@#$%^&*()_|+\-=?;:'",<>\r\n\{\}\[\]\\\/]/gi, '') //remove special chars
-        .replace(/[\u0300-\u036f]/g, ""); //remove diacritics
+      req.body[`${indexPrefix}_fti`] = SchemasService.createFtiContent(name, req.body, paths)
     }
     next();
   }
@@ -474,7 +471,7 @@ export class SchemasService implements OnModuleInit {
    * @param name
    */
   public async bulkFtiUpdate(name: string) {
-    const paths = ftiConfig[name]
+    const paths: Record<string, any>[] = ftiConfig[name]
     const m = this.models[this.names.indexOf(name)]
     if(paths) {
       const records = await m.find();
@@ -487,27 +484,8 @@ export class SchemasService implements OnModuleInit {
         m.findOne({_id: r._id})
           .populate(ppaths)
           .exec( (err, rec) => {
-            if (err) {
-              console.log(err);
-            }
-            const aggregation = [];
-            paths.forEach((path) => {
-             if(path.path && path.target && path.path.split('.').length > 1) {
-               aggregation.push(rec[path.path.split('.')[0]].reduce(function (a, c) {
-                 if (c[path.path.split('.')[1]]) return `${a} ${c[path.path.split('.')[1]].name}`;
-                 else return a;
-               }, ''));
-             }
-             else if(path.path) {
-               aggregation.push(
-                 _.get(rec, path.path)
-               );
-             }
-           });
-            rec.fti = aggregation.join(' ')
-              .normalize("NFD") //decompose combined graphemes
-              .replace(/[`~!@#$%^&*()_|+\-=?;:'",<>\r\n\{\}\[\]\\\/]/gi, '') //remove special chars
-              .replace(/[\u0300-\u036f]/g, ""); //remove diacritics
+            if (err) console.log(err);
+            rec[`${indexPrefix}_fti`] = SchemasService.createFtiContent(name, rec, paths);
             i = i+1;
             if ( i % 1000 === 0) {
               console.log(`**** bulk update for collection ${name} - DONE enriching ${i} of ${records.length} records to database.`);
@@ -534,6 +512,35 @@ export class SchemasService implements OnModuleInit {
     return;
   }
 
+  private static createFtiContent(name: string, rec: Record<string, any>, paths: Record<string, any>[]): string {
+    const aggregation = [];
+    paths.forEach((path) => {
+      if(path.path && path.target && path.path.split('.').length > 1) {
+        aggregation.push(rec[path.path.split('.')[0]].reduce(function (a, c) {
+          if (c[path.path.split('.')[1]]) return `${a} ${c[path.path.split('.')[1]].name}`;
+          else return a;
+        }, ''));
+      }
+      else if(path.path && path.target && path.path.split('.').length === 1 && Array.isArray(_.get(rec,path.path))) {
+        aggregation.push(rec[path.path].reduce((a, c) => `${a} ${c.name}`, ''));
+      }
+      else if(path.path && path.target && _.get(rec,path.path)) {
+        aggregation.push(rec[path.path].name);
+      }
+      else if(path.path && _.get(rec,path.path)) {
+        aggregation.push(
+          _.get(rec, path.path)
+        );
+      }
+    });
+    console.log(aggregation);
+    return aggregation.join(' ')
+        .normalize("NFD") //decompose combined graphemes
+        .replace(/[`~!@#$%^&*()_|+\-=?;:'",<>\r\n\{\}\[\]\\\/]/gi, '') //remove special chars
+        .replace(/[\u0300-\u036f]/g, "") //remove diacritics
+      + aggregation.join(' ').replace(/[\r\n]/, ' '); //include original writing without line breaks
+  }
+
   /**
    * used in presave hooks to create/update the column sort normalisation fields
    * TODO: paths should come from configservice, wich is currently not available in
@@ -547,12 +554,12 @@ export class SchemasService implements OnModuleInit {
    */
   private createSortIndexFields(req: Request, res: Response, next: NextFunction) {
     const name = req.originalUrl.split('/')[3];
-    const paths = ftiConfig[name];
+    const paths = sortIndexConfig[name];
     if(paths && paths.length > 0) {
       paths.forEach(path => {
         if(path.path && path.value) {
           if(path.path.split('.').length > 1) {
-            req.body[`${path.value.replace('.','_')}`] = _.get(req.body, path.path);
+            req.body[`${indexPrefix}_${path.value.replace('.','_')}`] = _.get(req.body, path.path);
           }
         }
       });
@@ -960,4 +967,5 @@ export class SchemasService implements OnModuleInit {
     }
     return p;
   };
+
 }
