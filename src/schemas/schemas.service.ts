@@ -5,6 +5,7 @@ import { OpenAPIObject } from '@nestjs/swagger';
 import mongooseHistory from 'mongoose-history';
 import { ConverterService } from './converter.service';
 import { AuthService } from '../auth/auth.service';
+import moment from 'moment';
 
 import * as _ from 'lodash';
 import jsonSchema from 'mongoose-schema-jsonschema';
@@ -68,6 +69,7 @@ const sortIndexConfig = {
   ],
   inventory: [
     { text: 'Name', value: 'name', path: 'name' },
+    { text: 'Creator', value: 'creator.id', path: 'creator[0].id.name' },
   ],
   entry: [
     { text: 'Name', value: 'name', path: 'name' },
@@ -122,6 +124,14 @@ const csvConfig = {
     (item) => ({ ...item, type1: item.classification ? item.classification.filter(c => _.get(c, 'aspect.name') === 'Kunstgattung')[0] : null}),
     (item) => ({ ...item, type2: item.classification ? item.classification.filter(c => _.get(c, 'aspect.name') === 'Kunstgattung')[1] : null}),
     (item) => ({ ...item, type3: item.classification ? item.classification.filter(c => _.get(c, 'aspect.name') === 'Kunstgattung')[2] : null}),
+    (item) => ({ ...item, destitution_ref_date: item.destitution_ref ? moment(String(item.destitution_ref.date)).format('DD. MM. YYYY') : null}),
+    (item) => ({ ...item, acquisition_ref_date: item.acquisition_ref ? moment(String(item.acquisition_ref.date)).format('DD. MM. YYYY') : null}),
+    (item) => ({ ...item, beginOfExistence: item.beginOfExistence ? moment(String(item.beginOfExistence)).format('DD. MM. YYYY') : null}),
+    (item) => ({ ...item, endOfExistence: item.endOfExistence ? moment(String(item.endOfExistence)).format('DD. MM. YYYY') : null}),
+    (item) => ({ ...item, created_start: item.created_start ? moment(String(item.created_start)).format('DD. MM. YYYY') : null}),
+    (item) => ({ ...item, created_end: item.created_end ? moment(String(item.created_end)).format('DD. MM. YYYY') : null}),
+    (item) => ({ ...item, date: item.date ? moment(String(item.date)).format('DD. MM. YYYY') : null}),
+
   ]
 };
 const csvExportFields = {
@@ -228,7 +238,7 @@ const csvExportFields = {
   },
   {
     label: 'Transaction (Inbound) - Date',
-    value: `acquisition_ref.date`,
+    value: `acquisition_ref_date`,
   },
   {
     label: 'Transaction (Inbound) - Price',
@@ -252,7 +262,7 @@ const csvExportFields = {
   },
   {
     label: 'Transaction (Outbound) - Date',
-    value: `destitution_ref.date`,
+    value: `destitution_ref_date`,
   },
   {
     label: 'Transaction (Outbound) - Price',
@@ -271,6 +281,190 @@ const csvExportFields = {
     value: `destitution_est[0].currency.name`,
   },
 ],
+  collect: [
+    {
+      label: 'Name',
+      value: `name`,
+    },
+    {
+      label: 'Creator Name',
+      value: `creator.0.id.name`,
+    },
+    {
+      label: 'Creator Name',
+      value: `creator.1.id.name`,
+    },
+    {
+      label: 'Creator Name',
+      value: `creator.2.id.name`,
+    },
+    {
+      label: 'Description',
+      value: `description`,
+    },
+  ],
+  inventory: [
+    {
+      label: 'Name',
+      value: `name`,
+    },
+    {
+      label: 'Creator Name',
+      value: `creator.0.id.name`,
+    },
+    {
+      label: 'Creator Name',
+      value: `creator.1.id.name`,
+    },
+    {
+      label: 'Creator Name',
+      value: `creator.2.id.name`,
+    },
+    {
+      label: 'Description',
+      value: `description`,
+    },
+    {
+      label: 'Begin of Existence',
+      value: `beginOfExistence`,
+    },
+    {
+      label: 'End of Existence',
+      value: `endOfExistence`,
+    },
+  ],
+  object: [
+    {
+      label: 'Name',
+      value: `name`,
+    },
+    {
+      label: 'Current Owner',
+      value: `currentOwner.name`,
+    },
+    {
+      label: 'Original Title',
+      value: `originalTitle`,
+    },
+    {
+      label: 'Description',
+      value: `description`,
+    },
+    {
+      label: 'Provenance',
+      value: `provinience`,
+    },
+    {
+      label: 'Technique',
+      value: `technique.0.name`,
+    },
+    {
+      label: 'Material',
+      value: `material.0.name`,
+    },
+    {
+      label: 'Actor',
+      value: `creator.0.id.name`,
+    },
+    {
+      label: 'Actor',
+      value: `creator.1.id.name`,
+    },
+    {
+      label: 'Actor',
+      value: `creator.2.id.name`,
+    },
+    {
+      label: 'Actor',
+      value: `creator.3.id.name`,
+    },
+    {
+      label: 'Description',
+      value: `description`,
+    },
+    {
+      label: 'Created Start',
+      value: `created_start`,
+    },
+    {
+      label: 'Created End',
+      value: `created_end`,
+    },
+    {
+      label: 'Object Type',
+      value: `type1.descriptor.name`,
+    },
+    {
+      label: 'Object Type',
+      value: `type2.descriptor.name`,
+    },
+    {
+      label: 'Object Type',
+      value: `type3.descriptor.name`,
+    },
+    {
+      label: 'Subject',
+      value: `subject1.descriptor.name`,
+    },
+    {
+      label: 'Subject',
+      value: `subject2.descriptor.name`,
+    },
+    {
+      label: 'Subject',
+      value: `subject3.descriptor.name`,
+    },
+    {
+      label: 'Data Range',
+      value: `daterange1.descriptor.name`,
+    },
+    {
+      label: 'Data Range',
+      value: `daterange2.descriptor.name`,
+    },
+    {
+      label: 'Data Range',
+      value: `daterange3.descriptor.name`,
+    },
+    {
+      label: 'School',
+      value: `school1.descriptor.name`,
+    },
+    {
+      label: 'School',
+      value: `school2.descriptor.name`,
+    },
+    {
+      label: 'School',
+      value: `school3.descriptor.name`,
+    },
+  ],
+  transaction: [
+    {
+      label: 'Date',
+      value: `date`,
+    },
+    {
+      label: 'Price',
+      value: `price[0].amount`,
+    },
+    {
+      label: 'Currency',
+      value: `price[0].currency.name`,
+    },
+    {
+      label: 'Actor',
+      value: `actor.0.id.name`,
+    },
+    {
+      label: 'Actor',
+      value: `actor.1.id.name`,
+    },
+    {
+      label: 'Actor',
+      value: `actor.2.id.name`,
+    },
+  ],
   actor: [
     {
       label: 'Name',
@@ -299,6 +493,28 @@ const csvExportFields = {
     {
       label: 'End of Existence',
       value: `endOfExistence`,
+    },
+  ],
+  descriptor: [
+    {
+      label: 'Name',
+      value: `name`,
+    },
+    {
+      label: 'Description',
+      value: `description`,
+    },
+    {
+      label: 'Identifier',
+      value: `identifier.0`,
+    },
+    {
+      label: 'Identifier',
+      value: `identifier.1`,
+    },
+    {
+      label: 'Identifier',
+      value: `identifier.2`,
     },
   ],
 }
