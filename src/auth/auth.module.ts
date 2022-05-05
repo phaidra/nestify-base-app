@@ -4,7 +4,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UserSchema } from 'src/user/schemas/user.schema';
+import { UserSchema } from '../user/schemas/user.schema';
 import { RefreshTokenSchema } from './schemas/refresh-token.schema';
 import { ConfigModule } from '@nestjs/config';
 import config from '../config';
