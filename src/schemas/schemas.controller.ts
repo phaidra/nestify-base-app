@@ -50,7 +50,21 @@ export class SchemasController {
     @Param('type') type: string,
     @Response() res,
   ) {
-    const updated = await this.schemasService.bulkFtiUpdate(type);
+    const updated = await SchemasService.bulkFtiUpdate(type);
+    return res.json(updated);
+  }
+
+  @Get('/updatesort/:type')
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({description: 'The Number of updated records.'})
+  @ApiNotFoundResponse({description: 'Record Type not found.'})
+  async updatesort(
+    @Param('type') type: string,
+    @Response() res,
+  ) {
+    const updated = await SchemasService.bulkSortIndexUpdate(type);
     return res.json(updated);
   }
 }

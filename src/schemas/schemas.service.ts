@@ -39,7 +39,26 @@ const ftiConfig = {
     { path: 'time', target: 'descriptor' },
     { path: 'classification.descriptor', target: 'descriptor' },
     { path: 'description', target: 'descriptor'}
-  ]
+  ],
+  'inventory': [
+    { path: 'name'},
+    { path: 'transscription'},
+    { path: 'description'},
+    { path: 'creator.id', target: 'actor' },
+    { path: 'place', target: 'descriptor' },
+    { path: 'classification.descriptor', target: 'descriptor' },
+  ],
+  'object': [
+    { path: 'name'},
+    { path: 'originalTitle' },
+    { path: 'provinience'},
+    { path: 'description'},
+    { path: 'creator.id', target: 'actor' },
+    { path: 'currentOwner', target: 'actor' },
+    { path: 'material', target: 'descriptor' },
+    { path: 'technique', target: 'descriptor' },
+    { path: 'classification.descriptor', target: 'descriptor' },
+  ],
 }
 
 const sortIndexConfig = {
@@ -296,9 +315,9 @@ export class SchemasService implements OnModuleInit {
   ) {};
 
   public json: Record<string, any>[] = [];
-  public names: string[] = [];
-  public schemas: Record<string, any>[] = [];
-  public models: Model<any>[] = [];
+  public static names: string[] = [];
+  public static schemas: Record<string, any>[] = [];
+  public static models: Model<any>[] = [];
   private history_options = {
     metadata: [
       {key: 'u', value: '__lastAccessedBy'},
@@ -316,15 +335,16 @@ export class SchemasService implements OnModuleInit {
   onModuleInit() {
 
     //if not there or faulty, create schemas
-    if(this.names.length < 1 ||
-       this.schemas.length !== this.names.length
+    if(SchemasService.names.length < 1 ||
+       SchemasService.schemas.length !== SchemasService.names.length
     ) this.initSchemas();
 
     //create models
-    this.models = this.createModels(mongoose.connections[1], this.names, this.schemas);
+    SchemasService.models = this.createModels(mongoose.connections[1], SchemasService.names, SchemasService.schemas);
 
     //restify models
-    this.restifyModels(this.adapterHost);
+    if (this.adapterHost.httpAdapter) this.restifyModels(this.adapterHost);
+    else console.log('**** ATTN: no httpAdapter available, this will only work for scripts');
   };
 
   /**
@@ -365,8 +385,8 @@ export class SchemasService implements OnModuleInit {
     // owl files
     // shacle defs
     // ?
-    this.names = SchemasService.createNameListFromDir(this.configService.get<string>('schemas.dir'));
-    this.schemas = this.createSchemasFromJSON(this.names.map(n => `${n}.json`));
+    SchemasService.names = SchemasService.createNameListFromDir(this.configService.get<string>('schemas.dir'));
+    SchemasService.schemas = this.createSchemasFromJSON(SchemasService.names.map(n => `${n}.json`));
     return true;
   }
 
@@ -403,12 +423,12 @@ export class SchemasService implements OnModuleInit {
    * @param host
    */
   private restifyModels(host: HttpAdapterHost) {
-    for (let i = 0; i < this.names.length; i++) {
-      restify.serve(host.httpAdapter, this.models[i], {
-        preCreate: [this.authService.validateUserExternal, this.ftiUpdate, this.createSortIndexFields],
-        preUpdate: [this.authService.validateUserExternal, this.ftiUpdate, this.createSortIndexFields],
+    for (let i = 0; i < SchemasService.names.length; i++) {
+      restify.serve(host.httpAdapter, SchemasService.models[i], {
+        preCreate: [this.authService.validateUserExternal, this.ftiUpdate, this.sortIndexUpdate],
+        preUpdate: [this.authService.validateUserExternal, this.ftiUpdate, this.sortIndexUpdate],
         preDelete: [this.authService.validateUserExternal],
-        postRead: [this.exportCSV],
+        postRead: [SchemasService.exportCSV],
         totalCountHeader: true,
       });
     }
@@ -420,14 +440,14 @@ export class SchemasService implements OnModuleInit {
    */
   public getResObject(baseurl: string): Record<string, any>[] {
     const a: Record<string, any>[] = [];
-    for (let i = 0; i < this.names.length; i++) {
-      if (this.names[i]) a.push({
-        type: this.names[i],
-        '@id': `${baseurl}/${this.names[i]}`,
-        attributes: this.schemas[i].jsonSchema(),
-        populateablePaths: this.getPopulateablePathsFromSchemaObject(this.schemas[i].jsonSchema(), []),
-        reversePaths: Object.keys(this.schemas[i].virtuals).slice(0, Object.keys(this.schemas[i].virtuals).length - 1),
-        listHeaders: this.createListHeadings(this.names[i]),
+    for (let i = 0; i < SchemasService.names.length; i++) {
+      if (SchemasService.names[i]) a.push({
+        type: SchemasService.names[i],
+        '@id': `${baseurl}/${SchemasService.names[i]}`,
+        attributes: SchemasService.schemas[i].jsonSchema(),
+        populateablePaths: SchemasService.getPopulateablePathsFromSchemaObject(SchemasService.schemas[i].jsonSchema(), []),
+        reversePaths: Object.keys(SchemasService.schemas[i].virtuals).slice(0, Object.keys(SchemasService.schemas[i].virtuals).length - 1),
+        listHeaders: this.createListHeadings(SchemasService.names[i]),
       });
     }
     return a;
@@ -438,15 +458,15 @@ export class SchemasService implements OnModuleInit {
    * @param name
    */
   public jsonSchemaByName(name: string) {
-    for (let i = 0; i < this.names.length; i++) {
-      if (name == this.names[i]) {
-        return this.schemas[i].jsonSchema();
+    for (let i = 0; i < SchemasService.names.length; i++) {
+      if (name == SchemasService.names[i]) {
+        return SchemasService.schemas[i].jsonSchema();
       }
     }
     return false;
   };
 
-  private exportCSV(req: any, res: Response, next: NextFunction) {
+  private static exportCSV(req: any, res: Response, next: NextFunction) {
     if(req.query.export === "csv") {
       const entity = _.last(req.path.split('/'));
       if (Array.isArray(csvExportFields[entity])) csvConfig.fields = csvExportFields[entity];
@@ -485,16 +505,16 @@ export class SchemasService implements OnModuleInit {
    * TODO: the time of the last run should be saved, so it can be ran at regular intervals
    * @param name
    */
-  public async bulkFtiUpdate(name: string) {
+  public static async bulkFtiUpdate(name: string) {
     const paths: Record<string, any>[] = ftiConfig[name]
-    const m = this.models[this.names.indexOf(name)]
+    const m = SchemasService.models[SchemasService.names.indexOf(name)]
     if(paths) {
       const records = await m.find();
       let i = 1;
       let j = 1;
-      const ppaths = this.getPopulateablePathsFromSchemaObject(this.schemas[this.names.indexOf(name)].jsonSchema(), []).reduce(function (a,c) { return `${a} ${c.path}` },'');
+      const ppaths = SchemasService.getPopulateablePathsFromSchemaObject(SchemasService.schemas[SchemasService.names.indexOf(name)].jsonSchema(), []).reduce(function (a,c) { return `${a} ${c.path}` },'');
       console.log(`bulk update for collection ${name} - writing ${records.length} records to database.`)
-      console.time('bulkFtiUpdate');
+      console.time(`bulkFtiUpdate-${name}`);
       records.forEach((r) => {
         m.findOne({_id: r._id})
           .populate(ppaths)
@@ -504,21 +524,21 @@ export class SchemasService implements OnModuleInit {
             i = i+1;
             if ( i % 1000 === 0) {
               console.log(`**** bulk update for collection ${name} - DONE enriching ${i} of ${records.length} records to database.`);
-              console.timeLog('bulkFtiUpdate');
+              console.timeLog(`bulkFtiUpdate-${name}`);
             }
             rec.save()
               .then(savedDoc => {
                 j = j+1;
                 if (j % 1000 === 0) {
                   console.log(`**** bulk update for collection ${name} - DONE writing ${j} of ${records.length} records to database.`);
-                  console.timeLog('bulkFtiUpdate');
+                  console.timeLog(`bulkFtiUpdate-${name}`);
                 }
-                if (j >= records.length) console.timeEnd('bulkFtiUpdate');
+                if (j >= records.length) console.timeEnd(`bulkFtiUpdate-${name}`);
               })
               .catch((err) => {
                 const errors = Object.keys(err.errors);
                 errors.forEach((e) => {
-                  console.log('**** ERROR in bulkFtiUpdate', e, err.errors[e].kind, err.errors[e].path, rec._id);
+                  console.log(`**** ERROR in bulkFtiUpdate-${name}`, e, err.errors[e].kind, err.errors[e].path, rec._id);
                 });
               })
           });
@@ -566,7 +586,7 @@ export class SchemasService implements OnModuleInit {
    * @param next
    * @private
    */
-  private createSortIndexFields(req: Request, res: Response, next: NextFunction) {
+  private sortIndexUpdate(req: Request, res: Response, next: NextFunction) {
     const name = req.originalUrl.split('/')[3];
     const paths = sortIndexConfig[name];
     if(paths && paths.length > 0) {
@@ -581,11 +601,70 @@ export class SchemasService implements OnModuleInit {
     next();
   }
 
+  /**
+   * bulk update for column sort normalisation, requires memory limits to be manually set for larger collections
+   * TODO: the time of the last run should be saved, so it can be ran at regular intervals
+   * @param name
+   */
+  public static async bulkSortIndexUpdate(name: string) {
+    const paths: Record<string, any>[] = sortIndexConfig[name]
+    const m = SchemasService.models[SchemasService.names.indexOf(name)]
+    if(paths && paths.length > 0) {
+      const records = await m.find();
+      let i = 1;
+      let j = 1;
+      const ppaths = SchemasService.getPopulateablePathsFromSchemaObject(SchemasService.schemas[SchemasService.names.indexOf(name)].jsonSchema(), []).reduce(function (a,c) { return `${a} ${c.path}` },'');
+      console.log(`bulk update for collection ${name} - writing ${records.length} records to database.`)
+      console.time(`bulkSortIndexUpdate-${name}`);
+      records.forEach((r) => {
+        m.findOne({_id: r._id})
+          .populate(ppaths)
+          .exec( (err, rec) => {
+            if (err) console.log(err);
+            if(paths && paths.length > 0) {
+              paths.forEach(path => {
+                if(path.path && path.value) {
+                  if(path.path.split('.').length > 1) {
+                    rec[`${indexPrefix}_${path.value.replace('.','_')}`] = _.get(rec, path.path);
+                  }
+                }
+              });
+            }
+            i = i+1;
+            if ( i % 1000 === 0) {
+              console.log(`**** bulk update for collection ${name} - DONE enriching ${i} of ${records.length} records to database.`);
+              console.timeLog(`bulkSortIndexUpdate-${name}`);
+            }
+            rec.save()
+              .then(savedDoc => {
+                j = j+1;
+                if (j % 1000 === 0) {
+                  console.log(`**** bulk update for collection ${name} - DONE writing ${j} of ${records.length} records to database.`);
+                  console.timeLog(`bulkSortIndexUpdate-${name}`);
+                }
+                if (j >= records.length) {
+                  console.timeEnd(`bulkSortIndexUpdate-${name}`);
+                  return;
+                }
+              })
+              .catch((err) => {
+                const errors = Object.keys(err.errors);
+                errors.forEach((e) => {
+                  console.log(`**** ERROR in bulkSortIndexUpdate-${name}`, e, err.errors[e].kind, err.errors[e].path, rec._id);
+                });
+              })
+          });
+      })
+    }
+  }
+
+
   private createListHeadings(name: string): [] {
     if (Array.isArray(sortIndexConfig[name])) return sortIndexConfig[name].map(c => {
       return {
         text: c.text,
         value: c.path.split('.').length > 1 ? `${indexPrefix}_${c.value.replace('.','_')}` : c.value,
+        ppath: c.value,
         path: c.path
       }
     });
@@ -619,7 +698,7 @@ export class SchemasService implements OnModuleInit {
    */
   public addSwaggerDefs (doc: OpenAPIObject): OpenAPIObject {
     this.initSchemas();
-    SchemasService.addSwagger(doc, this.names, this.schemas);
+    SchemasService.addSwagger(doc, SchemasService.names, SchemasService.schemas);
     return doc;
   }
 
@@ -939,10 +1018,10 @@ export class SchemasService implements OnModuleInit {
    */
   private addReverseVirtuals(name: string) {
     const t = {};
-    const s = this.schemas[this.names.indexOf(name)];
-    for (let i = 0; i < this.names.length; i++) {
-      if (this.names[i]) {
-        t[this.names[i]] = this.getPopulateablePathsFromSchemaObject(this.schemas[i].jsonSchema(), [])
+    const s = SchemasService.schemas[SchemasService.names.indexOf(name)];
+    for (let i = 0; i < SchemasService.names.length; i++) {
+      if (SchemasService.names[i]) {
+        t[SchemasService.names[i]] = SchemasService.getPopulateablePathsFromSchemaObject(SchemasService.schemas[i].jsonSchema(), [])
           .filter(p => p.target === name)
           .map(p => p.path);
       }
@@ -964,14 +1043,14 @@ export class SchemasService implements OnModuleInit {
    * @param schema
    * @param path
    */
-  private getPopulateablePathsFromSchemaObject(schema: Record<string, any>, path: string[]) {
+  public static getPopulateablePathsFromSchemaObject(schema: Record<string, any>, path: string[]) {
     let p = [];
     let t;
     if (path.length > 0) t = _.get(schema, path).type;
     else t = schema.type;
     if (t === 'object') {
       Object.keys(_.get(schema, path.concat(['properties']))).forEach((cp) => {
-        p = p.concat(this.getPopulateablePathsFromSchemaObject(schema, path.concat(['properties', cp])));
+        p = p.concat(SchemasService.getPopulateablePathsFromSchemaObject(schema, path.concat(['properties', cp])));
       });
     } else if (t === 'array') {
       if (_.get(schema, path.concat(['items'])).type === 'string' && _.get(schema, path.concat(['items']))['x-ref']) {
@@ -981,7 +1060,7 @@ export class SchemasService implements OnModuleInit {
         });
       } else if (_.get(schema, path.concat(['items'])).type === 'object') {
         Object.keys(_.get(schema, path.concat(['items', 'properties']))).forEach((cp) => {
-          p = p.concat(this.getPopulateablePathsFromSchemaObject(schema, path.concat(['items', 'properties', cp])));
+          p = p.concat(SchemasService.getPopulateablePathsFromSchemaObject(schema, path.concat(['items', 'properties', cp])));
         });
       }
     } else if (t === 'string' && _.get(schema, path)['x-ref']) {
@@ -992,5 +1071,11 @@ export class SchemasService implements OnModuleInit {
     }
     return p;
   };
+
+  public static getReverseVirtualsBySchemaName(schemaName: string): string[] {
+    const i = SchemasService.names.indexOf(schemaName);
+    if (i > -1) return Object.keys(SchemasService.schemas[i].virtuals).slice(0, Object.keys(SchemasService.schemas[i].virtuals).length - 1);
+    return [];
+  }
 
 }
