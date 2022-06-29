@@ -134,6 +134,7 @@ const csvConfig = {
 
   ]
 };
+
 const csvExportFields = {
   entry: [
   {
@@ -928,6 +929,14 @@ export class SchemasService implements OnModuleInit {
     swaggerSpec.paths[`/api/v${process.env.API_VERSION}/${name}/count`] = {
       'get': {
         'description': `Returns the number of documents of type ${name}`,
+        'parameters': [
+          {
+            'name': 'query',
+            'description': 'MongoDB Query as a well formed JSON String, ie {"name":"Bob"}',
+            'in': 'query',
+            'schema': { type: 'string' },
+          }
+        ],
         'responses': {
           200: {
             'description': `Document Count of ${name}`,
