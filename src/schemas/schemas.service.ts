@@ -576,7 +576,7 @@ export class SchemasService implements OnModuleInit {
   }
 
   /**
-   *
+   * create basic schemas from all provided JSON files
    * @param jsonlist
    */
   private createSchemasFromJSON(jsonlist: string[]): Schema<any>[] {
@@ -608,7 +608,7 @@ export class SchemasService implements OnModuleInit {
   }
 
   /**
-   *
+   * create mongoDB models from all assembled schemas
    * @param db
    * @param namelist
    * @param schemalist
@@ -623,7 +623,15 @@ export class SchemasService implements OnModuleInit {
   }
 
   /**
-   * dynamically adding denormalization fields for indexing of referenced documents to schemas
+   *
+   */
+
+
+  /**
+   * dynamically adding denormalized fields for full text search and sorting to the schema
+   * @param name
+   * @param s
+   * @private
    */
   private static addIndexFields(name: string, s: Record<string, any>): Record<string, any>{
     if (Array.isArray(ftiConfig[name])) s[`${indexPrefix}_fti`] = { "type":"String" };
@@ -636,7 +644,8 @@ export class SchemasService implements OnModuleInit {
   }
 
   /**
-   *
+   * uses https://florianholzapfel.github.io/express-restify-mongoose/ to create rest endpoints for all
+   * created schemas
    * @param host
    */
   private restifyModels(host: HttpAdapterHost) {
@@ -652,7 +661,7 @@ export class SchemasService implements OnModuleInit {
   }
 
   /**
-   *
+   * basic configuration and schema information exposed at the APIs root
    * @param baseurl
    */
   public getResObject(baseurl: string): Record<string, any>[] {
@@ -683,6 +692,13 @@ export class SchemasService implements OnModuleInit {
     return false;
   };
 
+  /**
+   * converts the result of any given query to a CSV file according to the csvExportFields configuration
+   * @param req
+   * @param res
+   * @param next
+   * @private
+   */
   private static exportCSV(req: any, res: Response, next: NextFunction) {
     if(req.query.export === "csv") {
       const entity = _.last(req.path.split('/'));
@@ -764,6 +780,13 @@ export class SchemasService implements OnModuleInit {
     return;
   }
 
+  /**
+   * combines a secified set of paths into one normalized field for a fulltext-like search
+   * @param name
+   * @param rec
+   * @param paths
+   * @private
+   */
   private static createFtiContent(name: string, rec: Record<string, any>, paths: Record<string, any>[]): string {
     const aggregation = [];
     paths.forEach((path) => {
@@ -875,7 +898,12 @@ export class SchemasService implements OnModuleInit {
     }
   }
 
-
+  /**
+   * creates a table header config for for the frontend(s) to use the correct columns for display and sorting
+   * in line with the normalized indices
+   * @param name
+   * @private
+   */
   private createListHeadings(name: string): [] {
     if (Array.isArray(sortIndexConfig[name])) return sortIndexConfig[name].map(c => {
       return {
