@@ -1,0 +1,32 @@
+version: '3.7'
+services:
+  nestify-mongodb:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodata:/data/db
+      - mongodumps:/data/dumps
+    networks:
+      - nestifynet
+  nestify-base-app:
+    build:
+      context: ./
+    image: nestify-dev
+    networks:
+      - nestifynet
+    ports:
+      - 3000:3000
+    volumes:
+      - schemas:/home/node_rest/wks_prod/nestify-base-app/jsonschemas
+
+networks:
+  nestifynet:
+
+volumes:
+  mongodata:
+  mongodumps:
+  schemas:
