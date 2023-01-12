@@ -44,7 +44,7 @@
     "moment": "^2.29.4",
     "mongoose": "^6.2.2",
     "mongoose-history": "^0.8.0",
-    "mongoose-schema-jsonschema": "^1.4.7",
+    "mongoose-schema-jsonschema": "^2.0.2",
     "nodemailer": "^6.6.5",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.0",
