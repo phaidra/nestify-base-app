@@ -39,4 +39,3 @@ export class AssetrefSubmitDto {
   @ApiProperty({ type: 'string', format: 'binary' })
   file: any;
 }
-

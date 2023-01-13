@@ -9,8 +9,5 @@ export class VocabService {
   constructor(
     @InjectModel('Concept') private readonly conceptModel: Model<Concept>,
     @InjectModel('Authrec') private readonly authrecModel: Model<Authrec>,
-  ) {
-  }
-
-
+  ) {}
 }

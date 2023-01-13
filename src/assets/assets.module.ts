@@ -4,7 +4,7 @@ import { AssetsService } from './assets.service';
 import { MulterModule } from '@nestjs/platform-express';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AssetsSchema} from './assets.schema';
+import { AssetsSchema } from './assets.schema';
 import { diskStorage } from 'multer';
 
 @Module({
@@ -22,6 +22,6 @@ import { diskStorage } from 'multer';
     MongooseModule.forFeature([{ name: 'Assetref', schema: AssetsSchema }]),
   ],
   controllers: [AssetsController],
-  providers: [AssetsService, ConfigService]
+  providers: [AssetsService, ConfigService],
 })
 export class AssetsModule {}

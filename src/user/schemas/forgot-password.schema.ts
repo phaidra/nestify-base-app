@@ -1,7 +1,8 @@
 import { Schema } from 'mongoose';
 import * as validator from 'validator';
 
-export const ForgotPasswordSchema = new Schema({
+export const ForgotPasswordSchema = new Schema(
+  {
     email: {
       required: [true, 'EMAIL_IS_BLANK'],
       type: String,
@@ -49,4 +50,5 @@ export const ForgotPasswordSchema = new Schema({
   {
     versionKey: false,
     timestamps: true,
-  });
+  },
+);

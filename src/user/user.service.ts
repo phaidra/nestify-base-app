@@ -2,7 +2,12 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { Request } from 'express';
 import { AuthService } from '../auth/auth.service';
 import { LoginUserDto } from './dto/login-user.dto';
-import { Injectable, BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { v4 } from 'uuid';
@@ -18,17 +23,19 @@ import nodemailer from 'nodemailer';
 
 @Injectable()
 export class UserService {
-
   HOURS_TO_VERIFY = parseInt(process.env.JWT_HOURS_TO_VERIFY, 10);
   HOURS_TO_BLOCK = parseInt(process.env.JWT_HOURS_TO_BLOCK, 10);
-  LOGIN_ATTEMPTS_TO_BLOCK = parseInt(process.env.JWT_LOGIN_ATTEMPTS_TO_BLOCK, 10);
+  LOGIN_ATTEMPTS_TO_BLOCK = parseInt(
+    process.env.JWT_LOGIN_ATTEMPTS_TO_BLOCK,
+    10,
+  );
 
   constructor(
     @InjectModel('_User') private readonly userModel: Model<User>,
-    @InjectModel('ForgotPassword') private readonly forgotPasswordModel: Model<ForgotPassword>,
+    @InjectModel('ForgotPassword')
+    private readonly forgotPasswordModel: Model<ForgotPassword>,
     private readonly authService: AuthService,
-  ) {
-  }
+  ) {}
 
   /**
    * registers a new user
@@ -81,7 +88,9 @@ export class UserService {
    * @param refreshAccessTokenDto
    */
   async refreshAccessToken(refreshAccessTokenDto: RefreshAccessTokenDto) {
-    const userId = await this.authService.findRefreshToken(refreshAccessTokenDto.refreshToken);
+    const userId = await this.authService.findRefreshToken(
+      refreshAccessTokenDto.refreshToken,
+    );
     const user = await this.userModel.findById(userId);
     if (!user) {
       throw new BadRequestException('Bad request');
@@ -96,7 +105,10 @@ export class UserService {
    * @param req
    * @param createForgotPasswordDto
    */
-  async forgotPassword(req: Request, createForgotPasswordDto: CreateForgotPasswordDto) {
+  async forgotPassword(
+    req: Request,
+    createForgotPasswordDto: CreateForgotPasswordDto,
+  ) {
     await this.findUserByEmail(createForgotPasswordDto.email);
     await this.saveForgotPassword(req, createForgotPasswordDto);
     return {
@@ -124,7 +136,9 @@ export class UserService {
    * @param resetPasswordDto
    */
   async resetPassword(resetPasswordDto: ResetPasswordDto) {
-    const forgotPassword = await this.findForgotPasswordByEmail(resetPasswordDto);
+    const forgotPassword = await this.findForgotPasswordByEmail(
+      resetPasswordDto,
+    );
     await UserService.setForgotPasswordFinalUsed(forgotPassword);
     await this.resetUserPassword(resetPasswordDto);
     return {
@@ -274,7 +288,10 @@ export class UserService {
    * @param createForgotPasswordDto
    * @private
    */
-  private async saveForgotPassword(req: Request, createForgotPasswordDto: CreateForgotPasswordDto) {
+  private async saveForgotPassword(
+    req: Request,
+    createForgotPasswordDto: CreateForgotPasswordDto,
+  ) {
     const forgotPassword = await this.forgotPasswordModel.create({
       email: createForgotPasswordDto.email,
       verification: v4(),
@@ -283,30 +300,35 @@ export class UserService {
       browserRequest: this.authService.getBrowserInfo(req),
       countryRequest: this.authService.getCountry(req),
     });
-    forgotPassword.save(null,(err,doc) => {
-      UserService.sendForgotPasswordMail(doc).then((mail) => {
-        console.log("reset link sent", mail);
-      })
-      .catch((err) => {
-        console.log('sent mail failed', err);
-      });
+    forgotPassword.save(null, (err, doc) => {
+      UserService.sendForgotPasswordMail(doc)
+        .then(mail => {
+          console.log('reset link sent', mail);
+        })
+        .catch(err => {
+          console.log('sent mail failed', err);
+        });
     });
   }
 
-  private static async sendForgotPasswordMail(forgotPasswordDoc: ForgotPassword) {
+  private static async sendForgotPasswordMail(
+    forgotPasswordDoc: ForgotPassword,
+  ) {
     const transporter = nodemailer.createTransport({
       host: process.env.MAIL_HOST,
       port: process.env.MAIL_PORT,
-      secure: (process.env.MAIL_PORT == "465"),
-      auth: process.env.MAIL_USER ? {
-        user: process.env.MAIL_USER, // generated ethereal user
-        pass: process.env.MAIL_PASS, // generated ethereal password
-      } : null,
+      secure: process.env.MAIL_PORT == '465',
+      auth: process.env.MAIL_USER
+        ? {
+            user: process.env.MAIL_USER, // generated ethereal user
+            pass: process.env.MAIL_PASS, // generated ethereal password
+          }
+        : null,
     });
     return await transporter.sendMail({
       from: `"${process.env.MAIL_FROM_NAME}" <${process.env.MAIL_FROM_ADRESS}>`,
       to: forgotPasswordDoc.email,
-      subject: "Password Reset Verification Link",
+      subject: 'Password Reset Verification Link',
       text: `Please go to https://vchc.univie.ac.at/db/#/en/u/resetpassword/${forgotPasswordDoc.verification} to reset your password.`,
       html: `Please go to <a href="https://vchc.univie.ac.at/db/#/en/u/resetpassword/${forgotPasswordDoc.verification}">this link</a> to reset your password.`,
     });
@@ -317,7 +339,9 @@ export class UserService {
    * @param verifyUuidDto
    * @private
    */
-  private async findForgotPasswordByUuid(verifyUuidDto: VerifyUuidDto): Promise<ForgotPassword> {
+  private async findForgotPasswordByUuid(
+    verifyUuidDto: VerifyUuidDto,
+  ): Promise<ForgotPassword> {
     const forgotPassword = await this.forgotPasswordModel.findOne({
       verification: verifyUuidDto.verification,
       firstUsed: false,
@@ -337,7 +361,10 @@ export class UserService {
    * @param forgotPassword
    * @private
    */
-  private async setForgotPasswordFirstUsed(req: Request, forgotPassword: ForgotPassword) {
+  private async setForgotPasswordFirstUsed(
+    req: Request,
+    forgotPassword: ForgotPassword,
+  ) {
     forgotPassword.firstUsed = true;
     forgotPassword.ipChanged = this.authService.getIp(req);
     forgotPassword.browserChanged = this.authService.getBrowserInfo(req);
@@ -350,7 +377,9 @@ export class UserService {
    * @param resetPasswordDto
    * @private
    */
-  private async findForgotPasswordByEmail(resetPasswordDto: ResetPasswordDto): Promise<ForgotPassword> {
+  private async findForgotPasswordByEmail(
+    resetPasswordDto: ResetPasswordDto,
+  ): Promise<ForgotPassword> {
     const forgotPassword = await this.forgotPasswordModel.findOne({
       email: resetPasswordDto.email,
       firstUsed: true,
@@ -368,7 +397,9 @@ export class UserService {
    * @param forgotPassword
    * @private
    */
-  private static async setForgotPasswordFinalUsed(forgotPassword: ForgotPassword) {
+  private static async setForgotPasswordFinalUsed(
+    forgotPassword: ForgotPassword,
+  ) {
     forgotPassword.finalUsed = true;
     await forgotPassword.save();
   }

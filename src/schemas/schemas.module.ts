@@ -10,13 +10,11 @@ import { UserSchema } from '../user/schemas/user.schema';
 @Global()
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: '_User', schema: UserSchema },
-    ]),
-    AuthModule],
+    MongooseModule.forFeature([{ name: '_User', schema: UserSchema }]),
+    AuthModule,
+  ],
   providers: [SchemasService, ConverterService],
   controllers: [SchemasController],
   exports: [SchemasService],
 })
-export class SchemasModule {
-}
+export class SchemasModule {}

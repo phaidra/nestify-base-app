@@ -1,6 +1,7 @@
 import { Schema } from 'mongoose';
 
-export const RefreshTokenSchema = new Schema({
+export const RefreshTokenSchema = new Schema(
+  {
     userId: {
       type: Schema.Types.ObjectId,
       ref: 'User',
@@ -26,4 +27,5 @@ export const RefreshTokenSchema = new Schema({
   {
     versionKey: false,
     timestamps: true,
-  });
+  },
+);

@@ -11,7 +11,6 @@ export class ConverterService {
     default: {},
   };
 
-
   /**
    * Creates functions specialized in registering custom validators, setters,
    * getters and defaults.
@@ -36,8 +35,7 @@ export class ConverterService {
           break;
       }
     };
-  };
-
+  }
 
   /**
    * Returns a previously registered function.
@@ -52,8 +50,7 @@ export class ConverterService {
       throw new Error('Unregistered "' + param + '" with name "' + key + '"');
     }
     return fn;
-  };
-
+  }
 
   /**
    * Converts type names into actual types supported by mongoose.
@@ -64,22 +61,21 @@ export class ConverterService {
    */
   matchType(type: string) {
     const types = {
-      'array': Array,
-      'buffer': Buffer,
-      'boolean': Boolean,
-      'date': Date,
-      'mixed': mongoose.Schema.Types.Mixed,
-      'number': Number,
-      'objectid': mongoose.Schema.Types.ObjectId,
-      'string': String,
-      'object': Object,
+      array: Array,
+      buffer: Buffer,
+      boolean: Boolean,
+      date: Date,
+      mixed: mongoose.Schema.Types.Mixed,
+      number: Number,
+      objectid: mongoose.Schema.Types.ObjectId,
+      string: String,
+      object: Object,
     };
     if (types[type.toLowerCase()]) {
       return types[type.toLowerCase()];
     }
     throw new Error('unknown type ' + type);
-  };
-
+  }
 
   /**
    * Function verifies that `value` is a valid parameter of RegExp constructor.
@@ -96,8 +92,7 @@ export class ConverterService {
       return new RegExp(value);
     }
     throw new Error('unexpected type ' + type);
-  };
-
+  }
 
   /**
    * Converts a plain json schema definition into a mongoose schema definition.
@@ -108,7 +103,7 @@ export class ConverterService {
   convert(descriptor: Record<string, any>) {
     const encoded: string = JSON.stringify(descriptor);
     const decoded: Record<string, any> = JSON.parse(encoded, (key, value) => {
-      if (key === 'type' && (typeof value !== 'object')) {
+      if (key === 'type' && typeof value !== 'object') {
         return this.matchType(value);
       }
       if (key === 'validate') {
@@ -132,5 +127,5 @@ export class ConverterService {
       return value;
     });
     return decoded;
-  };
+  }
 }

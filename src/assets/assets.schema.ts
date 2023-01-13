@@ -17,15 +17,15 @@ export const AssetsSchema = new mongoose.Schema({
     type: String,
   },
   size: {
-    type: Number
+    type: Number,
   },
   mimetype: {
     type: String,
   },
   __lastAccessedBy: {
-    type: String
+    type: String,
   },
   __lastAccessedIn: {
-    type: Date
+    type: Date,
   },
-})
+});

@@ -13,12 +13,12 @@ import Cryptr from 'cryptr';
 
 @Injectable()
 export class AuthService {
-
   crypt: any;
 
   constructor(
     @InjectModel('_User') private readonly userModel: Model<User>,
-    @InjectModel('RefreshToken') private readonly refreshTokenModel: Model<RefreshToken>,
+    @InjectModel('RefreshToken')
+    private readonly refreshTokenModel: Model<RefreshToken>,
     private readonly jwtService: JwtService,
   ) {
     this.crypt = new Cryptr(process.env.JWT_SECRET);
@@ -30,7 +30,9 @@ export class AuthService {
    * @param userId
    */
   async createAccessToken(userId: string) {
-    const accessToken = sign({ userId }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION });
+    const accessToken = sign({ userId }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRATION,
+    });
     return this.encryptText(accessToken);
   }
 
@@ -56,7 +58,9 @@ export class AuthService {
    * @param token
    */
   async findRefreshToken(token: string) {
-    const refreshToken = await this.refreshTokenModel.findOne({ refreshToken: token });
+    const refreshToken = await this.refreshTokenModel.findOne({
+      refreshToken: token,
+    });
     if (!refreshToken) {
       throw new UnauthorizedException('User has been logged out.');
     }
@@ -68,7 +72,10 @@ export class AuthService {
    * @param jwtPayload
    */
   async validateUser(jwtPayload: JwtPayload): Promise<any> {
-    const user = await this.userModel.findOne({ _id: jwtPayload.userId, verified: true });
+    const user = await this.userModel.findOne({
+      _id: jwtPayload.userId,
+      verified: true,
+    });
     if (!user) {
       throw new UnauthorizedException('User not found.');
     }
@@ -83,23 +90,30 @@ export class AuthService {
    * @param res
    * @param next
    */
-  async validateUserExternal(req: Request, res: Response, next: NextFunction): Promise<any> {
+  async validateUserExternal(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<any> {
     let jwtPayload = this.jwtExtractor(req);
 
     try {
       jwtPayload = this.jwtService.verify(jwtPayload);
     } catch (err) {
-      res.status(401).json({error:'Failed to verify token payload.'});
+      res.status(401).json({ error: 'Failed to verify token payload.' });
       return null;
     }
 
-    if(!jwtPayload.userId) {
-      res.status(401).json({error:'UserID not found in token payload.'});
+    if (!jwtPayload.userId) {
+      res.status(401).json({ error: 'UserID not found in token payload.' });
       return null;
     }
-    const user = await this.userModel.findOne({ _id: jwtPayload.userId, verified: true });
+    const user = await this.userModel.findOne({
+      _id: jwtPayload.userId,
+      verified: true,
+    });
     if (!user) {
-      res.status(401).json({error:'User not found.'});
+      res.status(401).json({ error: 'User not found.' });
       return null;
     }
     req.body.__lastAccessedBy = JSON.parse(JSON.stringify(user.email));
@@ -117,13 +131,14 @@ export class AuthService {
     if (request.header('x-token')) {
       token = request.get('x-token');
     } else if (request.headers.authorization) {
-      token = request.headers.authorization.replace('Bearer ', '').replace(' ', '');
+      token = request.headers.authorization
+        .replace('Bearer ', '')
+        .replace(' ', '');
     } else if (request.body.token) {
       token = request.body.token.replace(' ', '');
     } else if (request.query.token) {
       token = request.body.token.replace(' ', '');
-    }
-    else return {error: 'no token string found'}
+    } else return { error: 'no token string found' };
 
     token = this.decryptText(token);
     if (token.error) return token.error;
@@ -173,11 +188,11 @@ export class AuthService {
    *
    * @param text
    */
-  decryptText(text: string): string|Record<string, any> {
+  decryptText(text: string): string | Record<string, any> {
     try {
       return this.crypt.decrypt(text);
     } catch (err) {
-      return {error: 'token string malformed'};
+      return { error: 'token string malformed' };
     }
   }
 }
