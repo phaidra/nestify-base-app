@@ -1,4 +1,4 @@
-FROM node:latest
+FROM node:18
 MAINTAINER Christoph Hoffmann <Christoph.Hoffmann@oeaw.ac.at>
 
 RUN  apt-get update && apt-get upgrade -y && apt-get install -y  ghostscript graphicsmagick libgs-dev imagemagick poppler-utils
