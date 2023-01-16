@@ -15,18 +15,43 @@ services:
   nestify-base-app:
     build:
       context: ./
+      target: dev
     image: nestify-dev
+    env_file:
+      - ./dev.env
     networks:
       - nestifynet
     ports:
       - 3000:3000
     volumes:
-      - schemas:/home/node_rest/wks_prod/nestify-base-app/jsonschemas
+      - schemas:/usr/src/app/jsonschemas
+      - assets:/usr/src/app/assets
 
 networks:
   nestifynet:
 
 volumes:
   mongodata:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: $DOCKER_MONGODATA_DIR
   mongodumps:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: $DOCKER_MONGODUMPS_DIR
   schemas:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: $DOCKER_SCHEMAS_DIR
+  assets:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: $DOCKER_ASSETS_DIR
