@@ -8,7 +8,7 @@ authentication management as well as some endpoints for asset upload and managem
 
 
 
-## Setup for local Development
+## Setup (for local Development)
 The Repo comes with a ready to launch compose file - you only need to set up your environment variables.
 ```bash
 # setup your envirmonment variables
