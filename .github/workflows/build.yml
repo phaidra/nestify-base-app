@@ -23,3 +23,9 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: docker push
         run: docker push acdhch/nestify-base-app:$TAG
+      - name: redeploy
+        run: |
+          NMSP=wks-dev
+          if [ "$TAG" == "latest" ] ; then NMSP=wks-dev ; fi
+          echo "https://rancher.acdh-dev.oeaw.ac.at/v3/project/c-m-6hwgqq2g:p-6r7ql/workload/deployment:$NMSP:nestify?action=redeploy"
+          curl -i -X POST -H "Authorization: Bearer ${{ secrets.RANCHER_TOKEN }}" "https://rancher.acdh-dev.oeaw.ac.at/v3/project/c-m-6hwgqq2g:p-6r7ql/workload/deployment:$NMSP:nestify?action=redeploy"
