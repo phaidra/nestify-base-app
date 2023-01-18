@@ -1,4 +1,4 @@
-![Build](https://github.com/ctot-nondef/nestify-base-app/actions/workflows/build.yml/badge.svg)
+![Build & Deploy](https://github.com/acdh-oeaw/nestify-base-app/actions/workflows/build.yml/badge.svg)
 
 # nestify-base-app 
 
