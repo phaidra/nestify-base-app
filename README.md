@@ -23,10 +23,14 @@ docker compose --env-file ./dev.env run nestify-base-app
 To set up a database with docker-compose:
 ```bash
 # run the mongodb container specified in the compose file
-docker-compose --env-file ./dev.env run nestify-mongodb
+docker compose --env-file ./dev.env run nestify-mongodb
 # enter the mongodb container and set up your database and user
 docker exec -it <containerID> sh
-mongosh --username <MONGO_ROOT_USER> --password <MONGO_ROOT_PASSWORD>
+#
+# this does not work in 4.2.24-rc2
+# mongosh --username <MONGO_ROOT_USER> --password <MONGO_ROOT_PASSWORD>
+# just do
+mongo
 use <DATABASE_NAME>
 db.createUser({user: "<DATABASE_USER>", pwd: "<DATABASE_PASSWORD>",  roles: ["readWrite"]})
 ```
