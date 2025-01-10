@@ -17,7 +17,7 @@ cp dev.env.template dev.env
 
 If you're running your own Mongodb-Instance just fill in the connection details, run like so
 ```bash
-docker-compose --env-file ./dev.env run nestify-base-app
+docker compose --env-file ./dev.env run nestify-base-app
 ```
 
 To set up a database with docker-compose:
@@ -32,7 +32,7 @@ db.createUser({user: "<DATABASE_USER>", pwd: "<DATABASE_PASSWORD>",  roles: ["re
 ```
 then shutdown the db with <kbd>Ctrl</kbd>+<kbd>C</kbd> and run the app like so
 ```bash
-docker-compose --env-file ./dev.env up
+docker compose --env-file ./dev.env up
 ```
 
 ## Schema Definitions

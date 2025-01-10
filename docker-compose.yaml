@@ -1,7 +1,6 @@
-version: '3.7'
 services:
   nestify-mongodb:
-    image: mongo:latest
+    image: mongo:4.2.24-rc2
     environment:
       MONGO_INITDB_ROOT_USERNAME: $MONGO_ROOT_USER
       MONGO_INITDB_ROOT_PASSWORD: $MONGO_ROOT_PASSWORD
@@ -32,26 +31,6 @@ networks:
 
 volumes:
   mongodata:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: $DOCKER_MONGODATA_DIR
   mongodumps:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: $DOCKER_MONGODUMPS_DIR
   schemas:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: $DOCKER_SCHEMAS_DIR
   assets:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: $DOCKER_ASSETS_DIR
